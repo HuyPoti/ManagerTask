@@ -6,7 +6,7 @@
 /* ===================== EMPLOYEE ACTIONS ===================== */
 async function addEmployee() {
   if (!hasPermission('employee:add')){
-    alert('Bạn không có quyền thêm nhân viên');
+    alert(t("err_perm_add_emp"));
     return;
   }
   const code = document.getElementById("f-ecode").value.trim();
@@ -26,8 +26,8 @@ async function addEmployee() {
   await saveData();
 }
 async function deleteEmployee(id) {
-  if (!hasPermission('employee:delete')){
-    alert('Bạn không có quyền xoá nhân viên');
+  if (!hasPermission('employee:delete')) {
+    alert(t("err_perm_del_emp"));
     return;
   }
   if (!confirm("Xoá nhân viên này? Các công việc đã giao sẽ chuyển về trạng thái Chưa gán.")) return;

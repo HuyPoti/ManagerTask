@@ -25,32 +25,35 @@ function renderDepartment() {
   else body = renderDeptMachinesTab(dept);
 
   return `
-    <div class="header">
+        <div class="header">
       <div>
         <div class="title-row">
-          <button class="back-btn" onclick="backToOverview()">${ic("back")} Tổng quan</button>
+          <button class="back-btn" onclick="backToOverview()">${ic("back")} ${t("overview")}</button>
           <span class="title" style="margin-left:8px">${escapeHtml(dept.name).toUpperCase()}</span>
         </div>
-        <div class="subtitle">Trang quản lý riêng của bộ phận ${escapeHtml(dept.name)}.</div>
+        <div class="subtitle">${t("dept_subtitle", { name: escapeHtml(dept.name) })}</div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="stat-label">Tổng công việc của nhóm</div><div class="stat-value mono">${stats.total}</div></div>
-        <div class="stat"><div class="stat-label">Đang thực hiện</div><div class="stat-value mono">${stats.doing}</div></div>
-        <div class="stat"><div class="stat-label">Hoàn thành</div><div class="stat-value mono">${stats.done}</div></div>
-        <div class="stat"><div class="stat-label">Quá hạn</div><div class="stat-value mono ${stats.overdue > 0 ? "warn" : ""}">${stats.overdue}</div></div>
-        <div class="user-chip">${ic("users")}<span class="who"><b>${escapeHtml(currentUser.name)}</b></span><button class="logout-btn" onclick="logout()">${ic("logout")} Đăng xuất</button></div>
+        <div class="stat"><div class="stat-label">${t("stat_team_total")}</div><div class="stat-value mono">${stats.total}</div></div>
+        <div class="stat"><div class="stat-label">${t("stat_in_progress")}</div><div class="stat-value mono">${stats.doing}</div></div>
+        <div class="stat"><div class="stat-label">${t("stat_completed")}</div><div class="stat-value mono">${stats.done}</div></div>
+        <div class="stat"><div class="stat-label">${t("stat_overdue")}</div><div class="stat-value mono ${stats.overdue > 0 ? "warn" : ""}">${stats.overdue}</div></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${renderLangSwitcher()}
+          <div class="user-chip">${ic("users")}<span class="who"><b>${escapeHtml(currentUser.name)}</b></span><button class="logout-btn" onclick="logout()">${ic("logout")} ${t("logout")}</button></div>
+        </div>
       </div>
     </div>
     <div class="sync-bar" id="sync-bar"></div>
 
     <div class="toolbar">
       <div class="view-tabs">
-        <button class="view-tab ${deptTab === "dashboard" ? "active" : ""}" onclick="setDeptTab('dashboard')">${ic("grid")} Dashboard</button>
-        <button class="view-tab ${deptTab === "employees" ? "active" : ""}" onclick="setDeptTab('employees')">${ic("users")} Nhân viên</button>
-        <button class="view-tab ${deptTab === "tasks" ? "active" : ""}" onclick="setDeptTab('tasks')">${ic("clipboard")} Task công việc</button>
-        <button class="view-tab ${deptTab === "machines" ? "active" : ""}" onclick="setDeptTab('machines')">${ic("wrench")} List máy đang work</button>
+        <button class="view-tab ${deptTab === "dashboard" ? "active" : ""}" onclick="setDeptTab('dashboard')">${ic("grid")} ${t("tab_dashboard")}</button>
+        <button class="view-tab ${deptTab === "employees" ? "active" : ""}" onclick="setDeptTab('employees')">${ic("users")} ${t("tab_employees")}</button>
+        <button class="view-tab ${deptTab === "tasks" ? "active" : ""}" onclick="setDeptTab('tasks')">${ic("clipboard")} ${t("tab_tasks")}</button>
+        <button class="view-tab ${deptTab === "machines" ? "active" : ""}" onclick="setDeptTab('machines')">${ic("wrench")} ${t("tab_machines")}</button>
       </div>
-      <div class="toolbar-actions"><button class="export-btn" onclick="exportExcel()">${ic("download")} Xuất Excel</button></div>
+      <div class="toolbar-actions"><button class="export-btn" onclick="exportExcel()">${ic("download")} ${t("export_excel")}</button></div>
     </div>
     ${body}
   `;
@@ -74,12 +77,12 @@ function renderDeptEmployeesTab(dept) {
         <div class="emp-role">${escapeHtml(e.role)}</div>
       </div>
       <span class="emp-count mono">${taskCountFor(e.id)}</span>
-      ${hasPermission("employee:delete") ? `<button class="icon-btn danger" style="margin-left:4px" onclick="deleteEmployee('${e.id}')" aria-label="Xoá nhân viên">${ic("trash")}</button>` : ""}
+      ${hasPermission("employee:delete") ? `<button class="icon-btn danger" style="margin-left:4px" onclick="deleteEmployee('${e.id}')" aria-label="${t("btn_delete")}">${ic("trash")}</button>` : ""}
     </div>
   `,
         )
         .join("")
-    : `<div class="empty-table" style="padding:16px">Chưa có nhân viên nào trong bộ phận này.</div>`;
+    : `<div class="empty-table" style="padding:16px">${t("empty_dept_employees")}</div>`;
 
   const leaveEmpOptions = emps
     .map(
@@ -104,32 +107,36 @@ function renderDeptEmployeesTab(dept) {
           return `
       <div class="leave-item">
         <div class="item-info">
-          <div class="item-title">${emp ? escapeHtml(emp.name) : "Đã xoá"} <span class="item-sub">(${fmtDate(l.fromDate)} → ${fmtDate(l.toDate)})</span></div>
+          <div class="item-title">${emp ? escapeHtml(emp.name) : t("deleted_user")} <span class="item-sub">(${fmtDate(l.fromDate)} → ${fmtDate(l.toDate)})</span></div>
           ${l.reason ? `<div class="item-sub">${escapeHtml(l.reason)}</div>` : ""}
         </div>
         <div class="leave-actions">
-          ${hasPermission("leave:approve")
+          ${
+            hasPermission("leave:approve")
               ? `
                     <select class="status-select" style="color:var(--${stColor});border-color:var(--${stColor})" onchange="setLeaveStatus('${l.id}',this.value)">
-                      <option value="pending" ${l.status === "pending" ? "selected" : ""}>Chờ duyệt</option>
-                      <option value="approved" ${l.status === "approved" ? "selected" : ""}>Đã duyệt</option>
-                      <option value="rejected" ${l.status === "rejected" ? "selected" : ""}>Từ chối</option>
+                      <option value="pending" ${l.status === "pending" ? "selected" : ""}>${t("leave_status_pending")}</option>
+                      <option value="approved" ${l.status === "approved" ? "selected" : ""}>${t("leave_status_approved")}</option>
+                      <option value="rejected" ${l.status === "rejected" ? "selected" : ""}>${t("leave_status_rejected")}</option>
                     </select>
                 `
               : `
-                  <span class="badge mono" style="color:var(--${stColor});border-color:var(--${stColor})">${l.status === "pending" ? "Chờ duyệt" : l.status === "approved" ? "Đã duyệt" : "Từ chối"}</span>
+                  <span class="badge mono" style="color:var(--${stColor});border-color:var(--${stColor})">
+                    ${l.status === "pending" ? t("leave_status_pending") : l.status === "approved" ? t("leave_status_approved") : t("leave_status_rejected")}
+                  </span>
                 `
           }
-          ${(hasPermission("leave:approve") ||
-              l.employeeId === currentUser.id && l.status === "pending")
+          ${
+            hasPermission("leave:approve") ||
+            (l.employeeId === currentUser.id && l.status === "pending")
               ? `<button class="icon-btn danger" onclick="deleteLeave('${l.id}')">${ic("trash")}</button>`
               : ""
           }
         </div>
       </div>`;
-    })
-    .join("")
-    : `<div class="empty-dash">Chưa có đơn nghỉ nào.</div>`;
+        })
+        .join("")
+    : `<div class="empty-dash">${t("empty_leaves")}</div>`;
 
   const calEmpOptions = emps
     .map(
@@ -137,7 +144,8 @@ function renderDeptEmployeesTab(dept) {
         `<option value="${e.id}" ${calEmpId === e.id ? "selected" : ""}>${escapeHtml(e.name)}</option>`,
     )
     .join("");
-  const monthLabel = calMonth.toLocaleDateString("vi-VN", {
+  const locale = currentLang === "en" ? "en-US" : "vi-VN";
+  const monthLabel = calMonth.toLocaleDateString(locale, {
     month: "long",
     year: "numeric",
   });
@@ -145,46 +153,48 @@ function renderDeptEmployeesTab(dept) {
   return `
     <div class="dash-grid">
       <div class="dash-card">
-        <div class="dash-card-head">${ic("users")} Quản lý nhân viên</div>
+        <div class="dash-card-head">${ic("users")} ${t("card_emp_manage")}</div>
         ${empRows}
-          ${hasPermission('employee:add') ? (
-          !showEmpForm
-            ? `<button class="small-btn" onclick="showEmpForm=true;render()">${ic("plus")} Thêm nhân viên</button>`
-            : `<div class="form">
-                 <input id="f-ecode" placeholder="Mã số nhân viên (VD: NV005)" />
-               <input id="f-ename" placeholder="Họ tên" />
-               <input id="f-erole" placeholder="Chức vụ" />
-               <input id="f-epass" placeholder="Mật khẩu đăng nhập (để trống = dùng mã NV)" />
+          ${
+            hasPermission("employee:add")
+              ? !showEmpForm
+                ? `<button class="small-btn" onclick="showEmpForm=true;render()">${ic("plus")} ${t("btn_add_emp")}</button>`
+                : `<div class="form">
+                 <input id="f-ecode" placeholder="${t("f_emp_code_ph")}" />
+               <input id="f-ename" placeholder="${t("f_emp_name_ph")}" />
+               <input id="f-erole" placeholder="${t("f_emp_role_ph")}" />
+               <input id="f-epass" placeholder="${t("f_emp_pass_ph")}" />
                <div id="f-emp-error" class="form-error"></div>
                <div class="form-actions">
-                 <button class="btn-primary" onclick="addEmployee()">Thêm</button>
-                 <button onclick="showEmpForm=false;render()">Huỷ</button>
+                 <button class="btn-primary" onclick="addEmployee('${dept.id}')">${t("btn_save")}</button>
+                 <button onclick="showEmpForm=false;render()">${t("btn_cancel")}</button>
                </div>
              </div>`
-        ) : ''
-        }
+              : ""
+          }
       </div>
 
       <div class="dash-card">
-        <div class="dash-card-head">${ic("calendar")} Tạo đơn nghỉ</div>
+        <div class="dash-card-head">${ic("calendar")} ${t("card_leave_manage")}</div>
         ${
           !showLeaveForm
-            ? `<button class="small-btn" onclick="showLeaveForm=true;render()">${ic("plus")} Tạo đơn nghỉ mới</button>`
+            ? `<button class="small-btn" onclick="showLeaveForm=true;render()">${ic("plus")} ${t("btn_create_leave")}</button>`
             : `<div class="form" style="margin-top:0;border-top:none;padding-top:0">
-               ${hasPermission('leave:approve') 
-                 ? `<select id="f-lemp"><option value="">Chọn nhân viên...</option>${leaveEmpOptions}</select>` 
-                 : `<input type="hidden" id="f-lemp" value="${currentUser.id}" />
-                    <div style="margin-bottom: 8px; font-weight: 500;">Người xin nghỉ: <span style="color:var(--blue)">${escapeHtml(currentUser.name)}</span></div>`
+               ${
+                 hasPermission("leave:approve")
+                   ? `<select id="f-lemp"><option value="">${t("select_emp")}</option>${leaveEmpOptions}</select>`
+                   : `<input type="hidden" id="f-lemp" value="${currentUser.id}" />
+                    <div style="margin-bottom: 8px; font-weight: 500;">${t("leave_applicant")}: <span style="color:var(--blue)">${escapeHtml(currentUser.name)}</span></div>`
                }
                <div style="display:flex;gap:8px">
                  <input id="f-lfrom" type="date" style="flex:1" />
                  <input id="f-lto" type="date" style="flex:1" />
                </div>
-               <input id="f-lreason" placeholder="Lý do nghỉ (không bắt buộc)" />
+               <input id="f-lreason" placeholder="${t("leave_reason_ph")}" />
                <div id="f-leave-error" class="form-error"></div>
                <div class="form-actions">
-                 <button class="btn-primary" onclick="addLeave()">Tạo đơn</button>
-                 <button onclick="showLeaveForm=false;render()">Huỷ</button>
+                 <button class="btn-primary" onclick="addLeave()">${t("btn_create")}</button>
+                 <button onclick="showLeaveForm=false;render()">${t("btn_cancel")}</button>
                </div>
              </div>`
         }
@@ -192,7 +202,7 @@ function renderDeptEmployeesTab(dept) {
       </div>
 
       <div class="dash-card" style="grid-column:1 / -1">
-        <div class="dash-card-head">${ic("calendar")} Lịch đi làm của nhân viên</div>
+        <div class="dash-card-head">${ic("calendar")} ${t("card_attendance_cal")}</div>
         ${
           emps.length
             ? `
@@ -206,12 +216,12 @@ function renderDeptEmployeesTab(dept) {
           </div>
           ${buildCalendar(calEmpId, calMonth)}
           <div class="cal-legend">
-            <span><span class="sw" style="background:var(--panel-2);border:1px solid var(--border)"></span>Đi làm</span>
-            <span><span class="sw" style="background:var(--amber-soft);border:1px solid var(--amber)"></span>Nghỉ phép</span>
-            <span><span class="sw" style="background:var(--panel-2)"></span>Cuối tuần (chữ mờ)</span>
+            <span><span class="sw" style="background:var(--panel-2);border:1px solid var(--border)"></span>${t("calendar_working")}</span>
+            <span><span class="sw" style="background:var(--amber-soft);border:1px solid var(--amber)"></span>${t("calendar_leave")}</span>
+            <span><span class="sw" style="background:var(--panel-2)"></span>${t("calendar_weekend")}</span>
           </div>
         `
-            : `<div class="empty-dash">Chưa có nhân viên để hiển thị lịch.</div>`
+            : `<div class="empty-dash">${t("empty_calendar")}</div>`
         }
       </div>
     </div>
@@ -233,8 +243,8 @@ function renderDeptTasksTab(dept) {
   return `
     <div class="layout">
       <div class="panel">
-        <div class="panel-head">${ic("users")} Lọc theo nhân viên</div>
-        ${emps.length === 0 ? `<div class="empty-table">Chưa có nhân sự nào.</div>` : ""}
+        <div class="panel-head">${ic("users")} ${t("filter_by_emp")}</div>
+        ${emps.length === 0 ? `<div class="empty-table">${t("empty_personnel")}</div>` : ""}
         ${emps
           .map(
             (emp) => `
@@ -251,10 +261,10 @@ function renderDeptTasksTab(dept) {
       <div>
         <div class="toolbar">
           <div class="toolbar-left">
-            ${filterEmp ? `<span class="filter-chip" onclick="toggleFilter('${filterEmp.id}')">Đang lọc: ${escapeHtml(filterEmp.name)} ${ic("x")}</span>` : `<span style="font-size:12.5px;color:var(--text-faint)">Nhấn tên công việc để xem chi tiết</span>`}
+            ${filterEmp ? `<span class="filter-chip" onclick="toggleFilter('${filterEmp.id}')">${t("filter_filtering", { name: escapeHtml(filterEmp.name) })} ${ic("x")}</span>` : `<span style="font-size:12.5px;color:var(--text-faint)">${t("filter_hint_click_task")}</span>`}
           </div>
           <div class="toolbar-actions">
-            <button class="add-task-btn" onclick="showTaskForm=!showTaskForm;render()">${ic("plus")} Thêm công việc</button>
+            <button class="add-task-btn" onclick="showTaskForm=!showTaskForm;render()">${ic("plus")}${t("btn_add_task")}</button>
           </div>
         </div>
 
@@ -263,34 +273,33 @@ function renderDeptTasksTab(dept) {
             ? `
           <div class="task-form">
             <div class="task-form-row">
-              <div><label class="field-label">Tên công việc</label><input id="f-title" placeholder="VD: Hiệu chỉnh cảm biến trạm AL" style="width:100%" /></div>
-              <div><label class="field-label">Người phụ trách</label>
-                <select id="f-assignee" style="width:100%"><option value="">Chọn...</option>
-                  ${emps.map((e) => `<option value="${e.id}">${escapeHtml(e.name)}</option>`).join("")}
-                </select>
-              </div>
-              <div><label class="field-label">Độ ưu tiên</label>
-                <select id="f-priority" style="width:100%">
-                  <option value="high">Cao</option><option value="medium" selected>Trung bình</option><option value="low">Thấp</option>
-                </select>
-              </div>
+            <div><label class="field-label">${t("form_task_name")}</label><input id="f-title" placeholder="VD: Hiệu chỉnh cảm biến trạm AL" style="width:100%" /></div>
+            <div><label class="field-label">${t("form_pic")}</label>
+              <select id="f-assignee" style="width:100%"><option value="">${t("form_choose")}</option>
+                ${emps.map((e) => `<option value="${e.id}">${escapeHtml(e.name)}</option>`).join("")}
+              </select>
             </div>
-            <div class="task-form-row3">
-              <div><label class="field-label">Gắn với máy</label>
-                <select id="f-machine" style="width:100%"><option value="">— Không gắn máy —</option>${machineOptions}</select>
-              </div>
-              <div><label class="field-label">Ghi chú</label><textarea id="f-notes" placeholder="Ghi chú thêm (không bắt buộc)"></textarea></div>
+            <div><label class="field-label">${t("form_priority")}</label>
+              <select id="f-priority" style="width:100%">
+                <option value="high">${t("pri_high")}</option><option value="medium" selected>${t("pri_medium")}</option><option value="low">${t("pri_low")}</option>
+              </select>
             </div>
-            <div class="task-form-row2">
-              <div><label class="field-label">Ngày Start</label><input id="f-start" type="date" style="width:100%" /></div>
-              <div><label class="field-label">Ngày End</label><input id="f-end" type="date" style="width:100%" /></div>
-              <div><label class="field-label">Deadline</label><input id="f-deadline" type="date" style="width:100%" /></div>
-              <div></div>
+          </div>
+          <div class="task-form-row3">
+            <div><label class="field-label">${t("form_machine_attach")}</label>
+              <select id="f-machine" style="width:100%"><option value="">${t("form_no_machine")}</option>${machineOptions}</select>
             </div>
-            <div class="form-actions" style="max-width:260px">
-              <button class="btn-primary" onclick="addTask()">Tạo công việc</button>
-              <button onclick="showTaskForm=false;render()">Huỷ</button>
-            </div>
+            <div><label class="field-label">${t("form_notes")}</label><textarea id="f-notes" placeholder="${t("form_notes_placeholder")}"></textarea></div>
+          </div>
+          <div class="task-form-row2">
+            <div><label class="field-label">${t("form_start_date")}</label><input id="f-start" type="date" style="width:100%" /></div>
+            <div><label class="field-label">${t("form_end_date")}</label><input id="f-end" type="date" style="width:100%" /></div>
+            <div><label class="field-label">${t("form_deadline")}</label><input id="f-deadline" type="date" style="width:100%" /></div>
+            <div></div>
+          </div>
+          <div class="form-actions" style="max-width:260px">
+            <button class="btn-primary" onclick="addTask()">${t("btn_save")}</button>
+            <button class="btn btn-ghost" onclick="showTaskForm=false;render()">${t("btn_cancel")}</button>
             <div id="f-error" class="form-error"></div>
           </div>
         `
@@ -302,15 +311,17 @@ function renderDeptTasksTab(dept) {
             <colgroup>${colWidths.map((w) => `<col style="width:${w}px">`).join("")}</colgroup>
             <thead>
               <tr>
-                ${COL_LABELS.map(
-                  (label, i) => `
-                  <th>${escapeHtml(label)}${i < COL_LABELS.length - 1 ? `<span class="col-resizer" onmousedown="startColResize(event,${i})"></span>` : ""}</th>
+                ${getColLabels()
+                  .map(
+                    (label, i) => `
+                  <th>${escapeHtml(label)}${i < getColLabels().length - 1 ? `<span class="col-resizer" onmousedown="startColResize(event,${i})"></span>` : ""}</th>
                 `,
-                ).join("")}
+                  )
+                  .join("")}
               </tr>
             </thead>
             <tbody>
-              ${visibleTasks.length === 0 ? `<tr><td colspan="9" class="empty-table">Không có công việc nào.</td></tr>` : ""}
+              ${visibleTasks.length === 0 ? `<tr><td colspan="9" class="empty-table">${t("no_tasks_table")}</td></tr>` : ""}
               ${visibleTasks
                 .map((task) => {
                   const emp = employeeById(task.assigneeId);
@@ -320,7 +331,7 @@ function renderDeptTasksTab(dept) {
                   return `
                   <tr data-task-id="${task.id}" style="${rowHeights[task.id] ? "height:" + rowHeights[task.id] + "px" : ""}">
                     <td class="col-title"><button class="task-title-btn" onclick="openTaskModal('${task.id}')">${escapeHtml(task.title)}</button></td>
-                    <td class="col-assignee"><span class="assignee-cell">${emp ? `<span class="dot" style="background:var(--${emp.color})"></span>${escapeHtml(emp.name)}` : "Chưa gán"}</span></td>
+                    <td class="col-assignee"><span class="assignee-cell">${emp ? `<span class="dot" style="background:var(--${emp.color})"></span>${escapeHtml(emp.name)}` : t("unassigned")}</span></td>
                     <td><span class="badge mono" style="color:var(--${prio.color});border-color:var(--${prio.color})">${prio.label}</span></td>
                     <td>
                       <select class="status-select" style="color:var(--${st.color});border-color:var(--${st.color})" onchange="setStatus('${task.id}',this.value)">
@@ -330,10 +341,10 @@ function renderDeptTasksTab(dept) {
                     <td class="col-date"><input type="date" class="date-edit" value="${task.startDate || ""}" onchange="updateField('${task.id}','startDate',this.value)" /></td>
                     <td class="col-date"><input type="date" class="date-edit" value="${task.endDate || ""}" onchange="updateField('${task.id}','endDate',this.value)" /></td>
                     <td class="col-date ${overdue ? "overdue" : ""}"><input type="date" class="date-edit ${overdue ? "overdue" : ""}" value="${task.deadline || ""}" onchange="updateField('${task.id}','deadline',this.value)" />${overdue ? " ⚠" : ""}</td>
-                    <td class="col-notes"><textarea class="notes-edit" rows="1" placeholder="Ghi chú..." title="${escapeAttr(task.notes || "")}" onchange="updateField('${task.id}','notes',this.value)">${escapeHtml(task.notes || "")}</textarea></td>
+                    <td class="col-notes"><textarea class="notes-edit" rows="1" placeholder="${t("notes_placeholder")}" title="${escapeAttr(task.notes || "")}" onchange="updateField('${task.id}','notes',this.value)">${escapeHtml(task.notes || "")}</textarea></td>
                     <td><div class="actions-cell">
-                      <span class="row-resizer" title="Kéo để chỉnh chiều cao hàng" onmousedown="startRowResize(event,this)">${ic("grip")}</span>
-                      <button class="icon-btn danger" onclick="deleteTask('${task.id}')" aria-label="Xoá công việc">${ic("trash")}</button>
+                       <span class="row-resizer" title="${t("drag_row_height")}" onmousedown="startRowResize(event,this)">${ic("grip")}</span>
+                      <button class="icon-btn danger" onclick="deleteTask('${task.id}')" aria-label="${t("btn_delete")}">${ic("trash")}</button>
                     </div></td>
                   </tr>
                 `;
@@ -361,7 +372,7 @@ function machineTaskGroup(title, list) {
                   `<div class="machine-task-item" onclick="openTaskModal('${t.id}')">${escapeHtml(t.title)}</div>`,
               )
               .join("")
-          : `<div class="machine-empty">— trống —</div>`
+          : `<div class="machine-empty">${t("machine_empty_group")}</div>`
       }
     </div>
   `;
@@ -380,21 +391,21 @@ function renderMachineCard(m, dept) {
       <div class="machine-head">
         <div>
           <div class="machine-name">${escapeHtml(m.name)}</div>
-          <div class="machine-meta">${ic("calendar")} Ngày giao hàng: ${fmtDate(m.deliveryDate)}</div>
+          <div class="machine-meta">${ic("calendar")} ${t("machine_delivery_date", { date: fmtDate(m.deliveryDate) })}</div>
         </div>
-        <span class="badge mono" style="color:var(--${m.completed ? "green" : "teal"});border-color:var(--${m.completed ? "green" : "teal"})">${m.completed ? "Đã xong" : "Đang chạy"}</span>
+        <span class="badge mono" style="color:var(--${m.completed ? "green" : "teal"});border-color:var(--${m.completed ? "green" : "teal"})">${m.completed ? t("machine_status_done") : t("machine_status_running")}</span>
       </div>
       ${m.spec ? `<div class="machine-spec">${escapeHtml(m.spec)}</div>` : ""}
       <div class="machine-groups">
-        ${machineTaskGroup("Đang làm", doing)}
-        ${machineTaskGroup("Đang pending", pending)}
-        ${machineTaskGroup("Chưa làm", todo)}
-        ${machineTaskGroup("Đã hoàn thành", done)}
+        ${machineTaskGroup(t("status_doing"), doing)}
+        ${machineTaskGroup(t("status_pending"), pending)}
+        ${machineTaskGroup(t("status_todo"), todo)}
+        ${machineTaskGroup(t("status_done"), done)}
       </div>
-      ${machineTaskGroup("Ưu tiên cao", highPrio)}
+      ${machineTaskGroup(t("pri_high"), highPrio)}
       <div class="machine-actions">
-        <button onclick="deptTab='tasks';showTaskForm=true;render();document.getElementById('f-machine') && (document.getElementById('f-machine').value='${m.id}')">${ic("plus")} Thêm việc cho máy</button>
-        <button class="${m.completed ? "" : "btn-primary"}" onclick="toggleMachineCompleted('${m.id}')">${m.completed ? "Khôi phục đang chạy" : "Đánh dấu hoàn thành"}</button>
+        <button onclick="deptTab='tasks';showTaskForm=true;render();document.getElementById('f-machine') && (document.getElementById('f-machine').value='${m.id}')">${ic("plus")} ${t("machine_add_task")}</button>
+        <button class="${m.completed ? "" : "btn-primary"}" onclick="toggleMachineCompleted('${m.id}')">${m.completed ? t("machine_reopen") : t("machine_mark_completed")}</button>
       </div>
     </div>
   `;
@@ -405,22 +416,22 @@ function renderDeptMachinesTab(dept) {
   const completed = all.filter((m) => m.completed);
   return `
     <div class="toolbar">
-      <div class="toolbar-left"><span style="font-size:12.5px;color:var(--text-faint)">${active.length} máy đang chạy · ${completed.length} máy đã hoàn thành</span></div>
-      <div class="toolbar-actions"><button class="add-task-btn" onclick="showMachineForm=!showMachineForm;render()">${ic("plus")} Thêm máy mới</button></div>
+      <div class="toolbar-left"><span style="font-size:12.5px;color:var(--text-faint)">${t("machine_status_summary", { active: active.length, completed: completed.length })}</span></div>
+      <div class="toolbar-actions"><button class="add-task-btn" onclick="showMachineForm=!showMachineForm;render()">${ic("plus")} ${t("btn_add_machine")}</button></div>
     </div>
     ${
       showMachineForm
         ? `
       <div class="task-form">
         <div class="task-form-row">
-          <div><label class="field-label">Tên máy</label><input id="f-mname" placeholder="VD: Máy C - X198" style="width:100%" /></div>
-          <div><label class="field-label">Ngày giao hàng</label><input id="f-mdate" type="date" style="width:100%" /></div>
+          <div><label class="field-label">${t("f_machine_name")}</label><input id="f-mname" placeholder="${t("f_machine_name_ph")}" style="width:100%" /></div>
+          <div><label class="field-label">${t("f_machine_delivery")}</label><input id="f-mdate" type="date" style="width:100%" /></div>
           <div></div>
         </div>
-        <div><label class="field-label">Spec</label><textarea id="f-mspec" placeholder="Thông số kỹ thuật, cấu hình..." style="width:100%"></textarea></div>
+        <div><label class="field-label">${t("f_machine_spec")}</label><textarea id="f-mspec" placeholder="${t("f_machine_spec_ph")}" style="width:100%"></textarea></div>
         <div class="form-actions" style="max-width:220px">
-          <button class="btn-primary" onclick="addMachine()">Thêm máy</button>
-          <button onclick="showMachineForm=false;render()">Huỷ</button>
+          <button class="btn-primary" onclick="addMachine()">${t("btn_save_machine")}</button>
+          <button onclick="showMachineForm=false;render()">${t("btn_cancel")}</button>
         </div>
         <div id="f-machine-error" class="form-error"></div>
       </div>
@@ -428,11 +439,11 @@ function renderDeptMachinesTab(dept) {
         : ""
     }
 
-    ${active.length ? `<div class="machine-grid">${active.map((m) => renderMachineCard(m, dept)).join("")}</div>` : `<div class="empty-table">Chưa có máy nào đang chạy trong bộ phận này.</div>`}
+    ${active.length ? `<div class="machine-grid">${active.map((m) => renderMachineCard(m, dept)).join("")}</div>` : `<div class="empty-table">${t("empty_active_machines")}</div>`}
 
     <div class="section-title" style="cursor:pointer" onclick="toggleShowCompletedMachines()">
-      ${ic("check")} Máy cũ đã hoàn thành (${completed.length}) ${showCompletedMachines ? "▲" : "▼"}
+      ${ic("check")} ${t("completed_machines_title", { count: completed.length })} ${showCompletedMachines ? "▲" : "▼"}
     </div>
-    ${showCompletedMachines ? (completed.length ? `<div class="machine-grid">${completed.map((m) => renderMachineCard(m, dept)).join("")}</div>` : `<div class="empty-table">Chưa có máy nào hoàn thành.</div>`) : ""}
+    ${showCompletedMachines ? (completed.length ? `<div class="machine-grid">${completed.map((m) => renderMachineCard(m, dept)).join("")}</div>` : `<div class="empty-table">${t("empty_completed_machines")}</div>`) : ""}
   `;
 }

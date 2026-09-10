@@ -12,16 +12,17 @@
    ======================================================= */
 const PALETTE = ["blue", "teal", "green", "amber", "red", "purple"];
 const STATUS_OPTS = [
-  { key: "todo", label: "Chưa làm", color: "border-strong" },
-  { key: "pending", label: "Đang chờ (pending)", color: "amber" },
-  { key: "doing", label: "Đang làm", color: "teal" },
-  { key: "done", label: "Hoàn thành", color: "green" },
+  { key: "todo", get label() { return t("status_todo"); }, color: "border-strong" },
+  { key: "pending", get label() { return t("status_pending"); }, color: "amber" },
+  { key: "doing", get label() { return t("status_doing"); }, color: "teal" },
+  { key: "done", get label() { return t("status_done"); }, color: "green" },
 ];
 const PRIORITY = {
-  high: { label: "Cao", color: "red" },
-  medium: { label: "Trung bình", color: "amber" },
-  low: { label: "Thấp", color: "border-strong" },
+  high: { get label() { return t("pri_high"); }, color: "red" },
+  medium: { get label() { return t("pri_medium"); }, color: "amber" },
+  low: { get label() { return t("pri_low"); }, color: "border-strong" },
 };
+
 
 const seedDepartments = [
   { id: "d1", name: "Thiết Kế Điện", color: "blue" },

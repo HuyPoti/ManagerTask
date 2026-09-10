@@ -36,15 +36,15 @@ function renderOverviewPage() {
             <div class="dept-badge" style="background:var(--${d.color}-soft);color:var(--${d.color})">${escapeHtml(d.name.slice(0, 2).toUpperCase())}</div>
             <div>
               <div class="dept-name">${escapeHtml(d.name)}</div>
-              <div class="dept-sub">${dEmps.length} nhân viên</div>
+              <div class="dept-sub">${t('num_employees', { count: dEmps.length })}</div>
             </div>
           </div>
           ${miniDonut}
         </div>
         <div class="dept-stats-row">
-          <div class="dept-stat"><b>${dTasks.length}</b>Tổng task</div>
-          <div class="dept-stat"><b style="${overdue > 0 ? 'color:var(--red)' : ''}">${overdue}</b>Quá hạn</div>
-          <div class="dept-stat"><b>${pct}%</b>Hoàn thành</div>
+          <div class="dept-stat"><b>${dTasks.length}</b>${t('total_tasks')}</div>
+          <div class="dept-stat"><b style="${overdue > 0 ? 'color:var(--red)' : ''}">${overdue}</b>${t('overdue')}</div>
+          <div class="dept-stat"><b>${pct}%</b>${t('completed')}</div>
         </div>
       </button>
     `;
@@ -55,11 +55,14 @@ function renderOverviewPage() {
       <div>
         <div class="title-row"><span class="title">TAZMO VIỆT NAM</span></div>
       </div>
-      <div class="user-chip">${ic("users")}<span class="who">Xin chào, <b>${escapeHtml(currentUser.name)}</b></span><button class="logout-btn" onclick="logout()">${ic("logout")} Đăng xuất</button></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        ${renderLangSwitcher()}
+        <div class="user-chip">${ic("users")}<span class="who">${t("hello", { name: escapeHtml(currentUser.name) })}</span><button class="logout-btn" onclick="logout()">${ic("logout")} ${t("logout")}</button></div>
+      </div>
     </div>
     <div class="toolbar">
-      <div class="toolbar-left"><span class="section-title" style="margin:0">${ic("grid")} Dashboard tổng quan các công việc của từng bộ phận trong công ty</span></div>
-      <div class="toolbar-actions"><button class="export-btn" onclick="exportExcel()">${ic("download")} Xuất Excel</button></div>
+      <div class="toolbar-left"><span class="section-title" style="margin:0">${ic("grid")} ${t("dashboard_overview")}</span></div>
+      <div class="toolbar-actions"><button class="export-btn" onclick="exportExcel()">${ic("download")} ${t("export_excel")}</button></div>
     </div>
     <div class="dept-grid">
       ${deptCards}

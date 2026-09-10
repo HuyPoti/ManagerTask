@@ -15,37 +15,45 @@ async function resetData() {
   await saveData();
 }
 function exportExcel() {
-  const taskRows = tasks.map((t) => {
-    const emp = employeeById(t.assigneeId);
-    const dept = departmentById(t.departmentId);
-    const mach = machineById(t.machineId);
-    return {
-      "Bộ phận": dept ? dept.name : "",
-      "Tên công việc": t.title,
-      "Người phụ trách": emp ? emp.name : "Chưa gán",
-      "Máy": mach ? mach.name : "",
-      "Độ ưu tiên": priorityInfo(t.priority).label,
-      "Trạng thái": statusInfo(t.status).label,
-      "Ngày bắt đầu": t.startDate ? fmtDate(t.startDate) : "",
-      "Ngày kết thúc": t.endDate ? fmtDate(t.endDate) : "",
-      "Deadline": t.deadline ? fmtDate(t.deadline) : "",
-      "Quá hạn": isOverdue(t) ? "Có" : "Không",
-      "Ghi chú": t.notes || "",
-    };
+  const taskRows = tasks.map((tItem) => {
+    const emp = employeeById(tItem.assigneeId);
+    const dept = departmentById(tItem.departmentId);
+    const mach = machineById(tItem.machineId);
+    const row = {};
+    row[t("excel_col_dept")] = dept ? dept.name : "";
+    row[t("excel_col_task_name")] = tItem.title;
+    row[t("excel_col_pic")] = emp ? emp.name : t("unassigned");
+    row[t("excel_col_machine")] = mach ? mach.name : "";
+    row[t("excel_col_priority")] = priorityInfo(tItem.priority).label;
+    row[t("excel_col_status")] = statusInfo(tItem.status).label;
+    row[t("excel_col_start")] = tItem.startDate ? fmtDate(tItem.startDate) : "";
+    row[t("excel_col_end")] = tItem.endDate ? fmtDate(tItem.endDate) : "";
+    row[t("excel_col_deadline")] = tItem.deadline ? fmtDate(tItem.deadline) : "";
+    row[t("excel_col_overdue")] = isOverdue(tItem) ? t("excel_val_yes") : t("excel_val_no");
+    row[t("excel_col_notes")] = tItem.notes || "";
+    return row;
   });
-  const empRows = employees.map((e) => ({
-    "Mã NV": e.code, "Tên nhân viên": e.name, "Chức vụ": e.role,
-    "Bộ phận": departmentById(e.departmentId) ? departmentById(e.departmentId).name : "",
-    "Số công việc": taskCountFor(e.id),
-  }));
-  const machineRows = machines.map((m) => ({
-    "Bộ phận": departmentById(m.departmentId) ? departmentById(m.departmentId).name : "",
-    "Tên máy": m.name, "Ngày giao hàng": m.deliveryDate ? fmtDate(m.deliveryDate) : "",
-    "Spec": m.spec || "", "Trạng thái": m.completed ? "Đã hoàn thành" : "Đang chạy",
-  }));
+  const empRows = employees.map((e) => {
+    const row = {};
+    row[t("excel_col_emp_code")] = e.code;
+    row[t("excel_col_emp_name")] = e.name;
+    row[t("excel_col_role")] = e.role;
+    row[t("excel_col_dept")] = departmentById(e.departmentId) ? departmentById(e.departmentId).name : "";
+    row[t("excel_col_task_count")] = taskCountFor(e.id);
+    return row;
+  });
+  const machineRows = machines.map((m) => {
+    const row = {};
+    row[t("excel_col_dept")] = departmentById(m.departmentId) ? departmentById(m.departmentId).name : "";
+    row[t("excel_col_machine_name")] = m.name;
+    row[t("excel_col_delivery_date")] = m.deliveryDate ? fmtDate(m.deliveryDate) : "";
+    row[t("excel_col_spec")] = m.spec || "";
+    row[t("excel_col_status")] = m.completed ? t("excel_val_completed") : t("excel_val_running");
+    return row;
+  });
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(taskRows), "Công việc");
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(empRows), "Nhân sự");
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(machineRows), "Máy");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(taskRows), t("excel_sheet_tasks"));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(empRows), t("excel_sheet_employees"));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(machineRows), t("excel_sheet_machines"));
   XLSX.writeFile(wb, "task-working-tazmo-" + new Date().toISOString().slice(0, 10) + ".xlsx");
 }
