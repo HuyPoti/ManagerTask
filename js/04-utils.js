@@ -9,7 +9,7 @@ function pad2(n) { return String(n).padStart(2, "0"); }
 function taskDueDate(t) { return t.deadline || t.endDate; }
 function isOverdue(t) {
   const due = taskDueDate(t);
-  if (!due || t.status === "done") return false;
+  if (!due || t.status === "done" || t.status === "closed") return false;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   return new Date(due + "T00:00:00") < today;
 }
@@ -24,6 +24,7 @@ function fmtTime(d) {
 function departmentById(id) { return departments.find((d) => d.id === id); }
 function employeeById(id) { return employees.find((e) => e.id === id); }
 function machineById(id) { return machines.find((m) => m.id === id); }
+function taskById(id) { return tasks.find((t) => t.id === id); }
 function statusInfo(key) { return STATUS_OPTS.find((s) => s.key === key) || STATUS_OPTS[0]; }
 function priorityInfo(key) { return PRIORITY[key] || PRIORITY.medium; }
 function deptEmployees(deptId) { return employees.filter((e) => e.departmentId === deptId); }
@@ -40,24 +41,58 @@ function escapeAttr(s) { return escapeHtml(s); }
 const SYSTEM_ROLES = {
   EMPLOYEE: 'employee',
   MANAGER: 'manager'
-}
+};
 
 const PERMISSIONS = {
   [SYSTEM_ROLES.EMPLOYEE]: [
-    'leave:create'
+    'leave:create',
+    'task:status_self'
   ],
   [SYSTEM_ROLES.MANAGER]: [
+    'task:create',
+    'task:edit',
+    'task:delete',
+    'task:status_self',
+    'task:status_close',
     'leave:create',
     'leave:approve',
     'employee:add',
-    'employee:delete'
+    'employee:delete',
+    'department:add',
+    'machine:add',
+    'machine:toggle',
+    'system:reset',
+    'data:export'
   ]
 };
 
-
 // Hàm dùng chung để kiểm tra quyền
-function hasPermission(action){
+function hasPermission(action) {
   if (!currentUser || !currentUser.accessLevel) return false;
   const userPermissions = PERMISSIONS[currentUser.accessLevel] || [];
   return userPermissions.includes(action);
+}
+
+function canEditTask(task) {
+  if (!currentUser || !task) return false;
+  if (hasPermission('task:edit')) return true;
+  return task.assigneeId === currentUser.id;
+}
+
+function canDeleteTask(task) {
+  return hasPermission('task:delete');
+}
+
+function canChangeTaskStatus(task, newStatus) {
+  if (!currentUser || !task) return false;
+  // Đóng hoặc mở lại task đã đóng: Chỉ người có quyền 'task:status_close' (Quản lý)
+  if (newStatus === 'closed' || task.status === 'closed') {
+    return hasPermission('task:status_close');
+  }
+  // Các trạng thái tiến độ thông thường (todo, doing, pending, done):
+  // Chỉ người phụ trách (PIC) mới có quyền cập nhật
+  if (hasPermission('task:status_self') && task.assigneeId === currentUser.id) {
+    return true;
+  }
+  return false;
 }

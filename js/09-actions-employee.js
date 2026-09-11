@@ -13,6 +13,8 @@ async function addEmployee() {
   const name = document.getElementById("f-ename").value.trim();
   const role = document.getElementById("f-erole").value.trim();
   const pass = document.getElementById("f-epass").value.trim();
+  const accessLevelEl = document.getElementById("f-eaccess");
+  const accessLevel = accessLevelEl ? accessLevelEl.value : "employee";
   const errEl = document.getElementById("f-emp-error");
   if (!code || !name) { if (errEl) errEl.textContent = "Vui lòng nhập mã số và tên nhân viên."; return; }
   if (employees.some((e) => e.code.toLowerCase() === code.toLowerCase())) {
@@ -20,7 +22,7 @@ async function addEmployee() {
     return;
   }
   const color = PALETTE[employees.length % PALETTE.length];
-  employees.push({ id: uid("e"), code, name, role: role || "Nhân viên", password: pass || code, departmentId: activeDeptId, color });
+  employees.push({ id: uid("e"), code, name, role: role || "Nhân viên", password: pass || code, departmentId: activeDeptId, color, accessLevel });
   showEmpForm = false;
   render();
   await saveData();

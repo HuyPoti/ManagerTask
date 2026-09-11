@@ -53,7 +53,7 @@ function renderDepartment() {
         <button class="view-tab ${deptTab === "tasks" ? "active" : ""}" onclick="setDeptTab('tasks')">${ic("clipboard")} ${t("tab_tasks")}</button>
         <button class="view-tab ${deptTab === "machines" ? "active" : ""}" onclick="setDeptTab('machines')">${ic("wrench")} ${t("tab_machines")}</button>
       </div>
-      <div class="toolbar-actions"><button class="export-btn" onclick="exportExcel()">${ic("download")} ${t("export_excel")}</button></div>
+      ${hasPermission('data:export') ? `<div class="toolbar-actions"><button class="export-btn" onclick="exportExcel()">${ic("download")} ${t("export_excel")}</button></div>` : ""}
     </div>
     ${body}
   `;
@@ -163,6 +163,10 @@ function renderDeptEmployeesTab(dept) {
                  <input id="f-ecode" placeholder="${t("f_emp_code_ph")}" />
                <input id="f-ename" placeholder="${t("f_emp_name_ph")}" />
                <input id="f-erole" placeholder="${t("f_emp_role_ph")}" />
+               <select id="f-eaccess" style="width:100%;margin-bottom:8px">
+                 <option value="employee">${t("role_employee")}</option>
+                 <option value="manager">${t("role_manager")}</option>
+               </select>
                <input id="f-epass" placeholder="${t("f_emp_pass_ph")}" />
                <div id="f-emp-error" class="form-error"></div>
                <div class="form-actions">
@@ -264,7 +268,7 @@ function renderDeptTasksTab(dept) {
             ${filterEmp ? `<span class="filter-chip" onclick="toggleFilter('${filterEmp.id}')">${t("filter_filtering", { name: escapeHtml(filterEmp.name) })} ${ic("x")}</span>` : `<span style="font-size:12.5px;color:var(--text-faint)">${t("filter_hint_click_task")}</span>`}
           </div>
           <div class="toolbar-actions">
-            <button class="add-task-btn" onclick="showTaskForm=!showTaskForm;render()">${ic("plus")}${t("btn_add_task")}</button>
+            ${hasPermission('task:create') ? `<button class="add-task-btn" onclick="showTaskForm=!showTaskForm;render()">${ic("plus")}${t("btn_add_task")}</button>` : ""}
           </div>
         </div>
 
@@ -328,23 +332,39 @@ function renderDeptTasksTab(dept) {
                   const overdue = isOverdue(task);
                   const prio = priorityInfo(task.priority);
                   const st = statusInfo(task.status);
+                  const canEdit = canEditTask(task);
+                  const canDelete = canDeleteTask(task);
+                  const isPic = currentUser && task.assigneeId === currentUser.id;
+                  const canClose = hasPermission('task:status_close');
+                  const progressOpts = STATUS_OPTS.filter((s) => s.key !== 'closed');
                   return `
                   <tr data-task-id="${task.id}" style="${rowHeights[task.id] ? "height:" + rowHeights[task.id] + "px" : ""}">
                     <td class="col-title"><button class="task-title-btn" onclick="openTaskModal('${task.id}')">${escapeHtml(task.title)}</button></td>
                     <td class="col-assignee"><span class="assignee-cell">${emp ? `<span class="dot" style="background:var(--${emp.color})"></span>${escapeHtml(emp.name)}` : t("unassigned")}</span></td>
                     <td><span class="badge mono" style="color:var(--${prio.color});border-color:var(--${prio.color})">${prio.label}</span></td>
                     <td>
-                      <select class="status-select" style="color:var(--${st.color});border-color:var(--${st.color})" onchange="setStatus('${task.id}',this.value)">
-                        ${STATUS_OPTS.map((s) => `<option value="${s.key}" ${s.key === task.status ? "selected" : ""}>${s.label}</option>`).join("")}
-                      </select>
+                      ${
+                        isPic && task.status !== 'closed'
+                          ? `<select class="status-select" style="color:var(--${st.color});border-color:var(--${st.color})" onchange="setStatus('${task.id}',this.value)">
+                              ${progressOpts.map((s) => `<option value="${s.key}" ${s.key === task.status ? "selected" : ""}>${s.label}</option>`).join("")}
+                            </select>`
+                          : `<span class="badge mono" style="color:var(--${st.color});border-color:var(--${st.color})">${st.label}</span>`
+                      }
                     </td>
-                    <td class="col-date"><input type="date" class="date-edit" value="${task.startDate || ""}" onchange="updateField('${task.id}','startDate',this.value)" /></td>
-                    <td class="col-date"><input type="date" class="date-edit" value="${task.endDate || ""}" onchange="updateField('${task.id}','endDate',this.value)" /></td>
-                    <td class="col-date ${overdue ? "overdue" : ""}"><input type="date" class="date-edit ${overdue ? "overdue" : ""}" value="${task.deadline || ""}" onchange="updateField('${task.id}','deadline',this.value)" />${overdue ? " ⚠" : ""}</td>
-                    <td class="col-notes"><textarea class="notes-edit" rows="1" placeholder="${t("notes_placeholder")}" title="${escapeAttr(task.notes || "")}" onchange="updateField('${task.id}','notes',this.value)">${escapeHtml(task.notes || "")}</textarea></td>
+                    <td class="col-date"><input type="date" class="date-edit" ${!canEdit || !hasPermission('task:edit') ? "disabled" : ""} value="${task.startDate || ""}" onchange="updateField('${task.id}','startDate',this.value)" /></td>
+                    <td class="col-date"><input type="date" class="date-edit" ${!canEdit || !hasPermission('task:edit') ? "disabled" : ""} value="${task.endDate || ""}" onchange="updateField('${task.id}','endDate',this.value)" /></td>
+                    <td class="col-date ${overdue ? "overdue" : ""}"><input type="date" class="date-edit ${overdue ? "overdue" : ""}" ${!canEdit || !hasPermission('task:edit') ? "disabled" : ""} value="${task.deadline || ""}" onchange="updateField('${task.id}','deadline',this.value)" />${overdue ? " ⚠" : ""}</td>
+                    <td class="col-notes"><textarea class="notes-edit" rows="1" placeholder="${t("notes_placeholder")}" ${!canEdit ? "disabled" : ""} title="${escapeAttr(task.notes || "")}" onchange="updateField('${task.id}','notes',this.value)">${escapeHtml(task.notes || "")}</textarea></td>
                     <td><div class="actions-cell">
-                       <span class="row-resizer" title="${t("drag_row_height")}" onmousedown="startRowResize(event,this)">${ic("grip")}</span>
-                      <button class="icon-btn danger" onclick="deleteTask('${task.id}')" aria-label="${t("btn_delete")}">${ic("trash")}</button>
+                      <span class="row-resizer" title="${t("drag_row_height")}" onmousedown="startRowResize(event,this)">${ic("grip")}</span>
+                      ${
+                        canClose
+                          ? (task.status !== 'closed'
+                              ? `<button class="icon-btn" onclick="closeTask('${task.id}')" title="${t("btn_close_task")}" style="color:var(--purple);border-color:var(--purple)">${ic("lock")}</button>`
+                              : `<button class="icon-btn" onclick="reopenTask('${task.id}')" title="${t("btn_reopen_task")}" style="color:var(--teal);border-color:var(--teal)">${ic("unlock")}</button>`)
+                          : ""
+                      }
+                      ${canDelete ? `<button class="icon-btn danger" onclick="deleteTask('${task.id}')" aria-label="${t("btn_delete")}">${ic("trash")}</button>` : ""}
                     </div></td>
                   </tr>
                 `;
@@ -382,9 +402,10 @@ function renderMachineCard(m, dept) {
   const doing = mTasks.filter((t) => t.status === "doing");
   const pending = mTasks.filter((t) => t.status === "pending");
   const done = mTasks.filter((t) => t.status === "done");
+  const closed = mTasks.filter((t) => t.status === "closed");
   const todo = mTasks.filter((t) => t.status === "todo");
   const highPrio = mTasks.filter(
-    (t) => t.priority === "high" && t.status !== "done",
+    (t) => t.priority === "high" && t.status !== "done" && t.status !== "closed",
   );
   return `
     <div class="machine-card ${m.completed ? "completed" : ""}">
@@ -401,11 +422,12 @@ function renderMachineCard(m, dept) {
         ${machineTaskGroup(t("status_pending"), pending)}
         ${machineTaskGroup(t("status_todo"), todo)}
         ${machineTaskGroup(t("status_done"), done)}
+        ${machineTaskGroup(t("status_closed"), closed)}
       </div>
       ${machineTaskGroup(t("pri_high"), highPrio)}
       <div class="machine-actions">
-        <button onclick="deptTab='tasks';showTaskForm=true;render();document.getElementById('f-machine') && (document.getElementById('f-machine').value='${m.id}')">${ic("plus")} ${t("machine_add_task")}</button>
-        <button class="${m.completed ? "" : "btn-primary"}" onclick="toggleMachineCompleted('${m.id}')">${m.completed ? t("machine_reopen") : t("machine_mark_completed")}</button>
+        ${hasPermission('task:create') ? `<button onclick="deptTab='tasks';showTaskForm=true;render();document.getElementById('f-machine') && (document.getElementById('f-machine').value='${m.id}')">${ic("plus")} ${t("machine_add_task")}</button>` : ""}
+        ${hasPermission('machine:toggle') ? `<button class="${m.completed ? "" : "btn-primary"}" onclick="toggleMachineCompleted('${m.id}')">${m.completed ? t("machine_reopen") : t("machine_mark_completed")}</button>` : ""}
       </div>
     </div>
   `;
@@ -417,7 +439,7 @@ function renderDeptMachinesTab(dept) {
   return `
     <div class="toolbar">
       <div class="toolbar-left"><span style="font-size:12.5px;color:var(--text-faint)">${t("machine_status_summary", { active: active.length, completed: completed.length })}</span></div>
-      <div class="toolbar-actions"><button class="add-task-btn" onclick="showMachineForm=!showMachineForm;render()">${ic("plus")} ${t("btn_add_machine")}</button></div>
+      ${hasPermission('machine:add') ? `<div class="toolbar-actions"><button class="add-task-btn" onclick="showMachineForm=!showMachineForm;render()">${ic("plus")} ${t("btn_add_machine")}</button></div>` : ""}
     </div>
     ${
       showMachineForm

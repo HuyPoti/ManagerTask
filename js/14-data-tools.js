@@ -5,6 +5,10 @@
 
 /* ===================== RESET / EXPORT ===================== */
 async function resetData() {
+  if (!hasPermission('system:reset')) {
+    alert(t("err_perm_reset"));
+    return;
+  }
   if (!confirm("Xoá toàn bộ dữ liệu hiện tại và khôi phục dữ liệu mẫu? Hành động này ảnh hưởng đến tất cả mọi người đang dùng chung.")) return;
   departments = seedDepartments.slice();
   employees = seedEmployees.slice();
@@ -15,6 +19,10 @@ async function resetData() {
   await saveData();
 }
 function exportExcel() {
+  if (!hasPermission('data:export')) {
+    alert(t("err_perm_export"));
+    return;
+  }
   const taskRows = tasks.map((tItem) => {
     const emp = employeeById(tItem.assigneeId);
     const dept = departmentById(tItem.departmentId);

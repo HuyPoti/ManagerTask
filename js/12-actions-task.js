@@ -5,6 +5,10 @@
 
 /* ===================== TASK ACTIONS ===================== */
 async function addTask() {
+  if (!hasPermission('task:create')) {
+    alert(t("err_perm_add_task"));
+    return;
+  }
   const title = document.getElementById("f-title").value.trim();
   const assignee = document.getElementById("f-assignee").value;
   const priority = document.getElementById("f-priority").value;
@@ -21,6 +25,12 @@ async function addTask() {
   await saveData();
 }
 async function deleteTask(id) {
+  const target = tasks.find((t) => t.id === id);
+  if (!canDeleteTask(target)) {
+    alert(t("err_perm_del_task"));
+    return;
+  }
+  if (!confirm("Xoá công việc này?")) return;
   tasks = tasks.filter((t) => t.id !== id);
   if (taskModalId === id) taskModalId = null;
   render();
@@ -29,13 +39,58 @@ async function deleteTask(id) {
 async function setStatus(id, newStatus) {
   const t = tasks.find((x) => x.id === id);
   if (!t) return;
+  if (!canChangeTaskStatus(t, newStatus)) {
+    if (newStatus === 'closed' || t.status === 'closed') {
+      alert(t("err_perm_status_close"));
+    } else {
+      alert(t("err_perm_only_pic_status"));
+    }
+    render();
+    return;
+  }
   t.status = newStatus;
+  render();
+  await saveData();
+}
+async function closeTask(id) {
+  if (!hasPermission('task:status_close')) {
+    alert(t("err_perm_status_close"));
+    return;
+  }
+  const t = tasks.find((x) => x.id === id);
+  if (!t) return;
+  t.status = "closed";
+  render();
+  await saveData();
+}
+async function reopenTask(id) {
+  if (!hasPermission('task:status_close')) {
+    alert(t("err_perm_status_close"));
+    return;
+  }
+  const t = tasks.find((x) => x.id === id);
+  if (!t) return;
+  t.status = "todo";
   render();
   await saveData();
 }
 async function updateField(id, field, value) {
   const t = tasks.find((x) => x.id === id);
   if (!t) return;
+  if (field === 'status') {
+    if (!canChangeTaskStatus(t, value)) {
+      if (value === 'closed' || t.status === 'closed') alert(t("err_perm_status_close"));
+      else alert(t("err_perm_only_pic_status"));
+      render();
+      return;
+    }
+  } else {
+    if (!canEditTask(t)) {
+      alert(t("err_perm_edit_task"));
+      render();
+      return;
+    }
+  }
   t[field] = value;
   render();
   await saveData();
@@ -47,15 +102,28 @@ function closeTaskModal() { taskModalId = null; render(); }
 async function saveTaskModal(id) {
   const t = tasks.find((x) => x.id === id);
   if (!t) return;
-  t.title = document.getElementById("m-title").value.trim() || t.title;
-  t.assigneeId = document.getElementById("m-assignee").value;
-  t.machineId = document.getElementById("m-machine").value;
-  t.priority = document.getElementById("m-priority").value;
-  t.status = document.getElementById("m-status").value;
-  t.startDate = document.getElementById("m-start").value;
-  t.endDate = document.getElementById("m-end").value;
-  t.deadline = document.getElementById("m-deadline").value;
-  t.notes = document.getElementById("m-notes").value;
+  const statusEl = document.getElementById("m-status");
+  if (statusEl) {
+    const newStatus = statusEl.value;
+    if (newStatus && newStatus !== t.status) {
+      if (canChangeTaskStatus(t, newStatus)) {
+        t.status = newStatus;
+      }
+    }
+  }
+  if (canEditTask(t)) {
+    if (hasPermission('task:edit')) {
+      t.title = document.getElementById("m-title").value.trim() || t.title;
+      t.assigneeId = document.getElementById("m-assignee").value;
+      t.machineId = document.getElementById("m-machine").value;
+      t.priority = document.getElementById("m-priority").value;
+      t.startDate = document.getElementById("m-start").value;
+      t.endDate = document.getElementById("m-end").value;
+      t.deadline = document.getElementById("m-deadline").value;
+    }
+    const notesEl = document.getElementById("m-notes");
+    if (notesEl) t.notes = notesEl.value;
+  }
   taskModalId = null;
   render();
   await saveData();

@@ -5,6 +5,10 @@
 
 /* ===================== DEPARTMENT ACTIONS ===================== */
 async function addDepartment() {
+  if (!hasPermission('department:add')) {
+    alert(t("err_perm_add_dept"));
+    return;
+  }
   const name = document.getElementById("f-dname").value.trim();
   const errEl = document.getElementById("f-dept-error");
   if (!name) { if (errEl) errEl.textContent = "Vui lòng nhập tên bộ phận."; return; }

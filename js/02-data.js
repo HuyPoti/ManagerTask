@@ -16,6 +16,7 @@ const STATUS_OPTS = [
   { key: "pending", get label() { return t("status_pending"); }, color: "amber" },
   { key: "doing", get label() { return t("status_doing"); }, color: "teal" },
   { key: "done", get label() { return t("status_done"); }, color: "green" },
+  { key: "closed", get label() { return t("status_closed"); }, color: "purple" },
 ];
 const PRIORITY = {
   high: { get label() { return t("pri_high"); }, color: "red" },

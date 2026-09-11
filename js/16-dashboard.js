@@ -10,8 +10,9 @@ function renderDashboardBlock(tasksForDash, empList) {
   const pendingCount = tasksForDash.filter((t) => t.status === "pending").length;
   const doingCount = tasksForDash.filter((t) => t.status === "doing").length;
   const doneCount = tasksForDash.filter((t) => t.status === "done").length;
+  const closedCount = tasksForDash.filter((t) => t.status === "closed").length;
   const overdueCount = tasksForDash.filter((t) => isOverdue(t)).length;
-  const completionRate = total ? Math.round((doneCount / total) * 100) : 0;
+  const completionRate = total ? Math.round(((doneCount + closedCount) / total) * 100) : 0;
 
   const statusDonut = buildDonut(
     [
@@ -19,6 +20,7 @@ function renderDashboardBlock(tasksForDash, empList) {
       { value: pendingCount, color: "amber" },
       { value: doingCount, color: "teal" },
       { value: doneCount, color: "green" },
+      { value: closedCount, color: "purple" },
     ],
     { centerLabel: completionRate + "%", centerSub: t("donut_completed") }
   );
@@ -94,6 +96,7 @@ function renderDashboardBlock(tasksForDash, empList) {
             <div class="legend-item"><span class="dot" style="background:var(--amber)"></span><span class="legend-label">${t("status_pending")}</span><span class="legend-value mono">${pendingCount}</span></div>
             <div class="legend-item"><span class="dot" style="background:var(--teal)"></span><span class="legend-label">${t("status_doing")}</span><span class="legend-value mono">${doingCount}</span></div>
             <div class="legend-item"><span class="dot" style="background:var(--green)"></span><span class="legend-label">${t("status_done")}</span><span class="legend-value mono">${doneCount}</span></div>
+            <div class="legend-item"><span class="dot" style="background:var(--purple)"></span><span class="legend-label">${t("status_closed")}</span><span class="legend-value mono">${closedCount}</span></div>
             <div class="legend-item"><span class="dot" style="background:var(--red)"></span><span class="legend-label">${t("overdue")}</span><span class="legend-value mono">${overdueCount}</span></div>
           </div>
         </div>
