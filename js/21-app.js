@@ -8,10 +8,14 @@ function renderSyncBar() {
   const el = document.getElementById("sync-bar");
   if (!el) return;
   if (!IS_CONFIGURED) {
-    el.innerHTML = `<div class="demo-banner">${ic("alert")} Chế độ xem thử: chưa cấu hình Firebase, dữ liệu chỉ tồn tại trong phiên này và <b>không dùng chung được với người khác</b>.</div>`;
+    el.innerHTML = `<div class="demo-banner">${ic("alert")} ${t("view_mode_demo")}</div>`;
     return;
   }
-  el.innerHTML = `<span class="shared-note">${ic("users")} Dữ liệu dùng chung cho cả nhóm, đồng bộ tức thời ${syncing ? "· đang lưu..." : lastSync ? "· cập nhật lúc " + fmtTime(lastSync) : ""}${syncError ? `<span class="sync-error"> · ${syncError}</span>` : ""}</span>`;
+  const timeStr = lastSync ? fmtTime(lastSync) : "";
+  const statusNote = syncing ? t("sync_saving") : lastSync ? t("sync_updated_at", { time: timeStr }) : "";
+  el.innerHTML = `<span class="shared-note">${ic("users")} ${t("sync_shared_note")} ${statusNote}${syncError
+    ? `<span class="sync-error"> · ${syncError}</span>`
+    : ""}</span>`;
 }
 
 function render() {

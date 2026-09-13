@@ -5,6 +5,10 @@
 
 /* ===================== MACHINE ACTIONS ===================== */
 async function addMachine() {
+  if (!hasPermission('machine:add')) {
+    alert(t("err_perm_add_machine"));
+    return;
+  }
   const name = document.getElementById("f-mname").value.trim();
   const deliveryDate = document.getElementById("f-mdate").value;
   const spec = document.getElementById("f-mspec").value.trim();
@@ -16,6 +20,11 @@ async function addMachine() {
   await saveData();
 }
 async function toggleMachineCompleted(id) {
+  if (!hasPermission('machine:toggle')) {
+    alert(t("err_perm_toggle_machine"));
+    render();
+    return;
+  }
   const m = machineById(id);
   if (!m) return;
   m.completed = !m.completed;

@@ -1,0 +1,413 @@
+/* =====================================================================
+   00-i18n.js — Quản lý ngôn ngữ và từ điển
+   File này phải được load đầu tiên để các file JS khác có thể gọi hàm t()
+   ===================================================================== */
+const TRANSLATIONS = {
+  vi: {
+    // --- Header chung ---
+    "app_title": "TAZMO VIỆT NAM",
+    "hello": "Xin chào, <b>{name}</b>", // {name} là tham số động
+    "logout": "Đăng xuất",
+    "overview": "Tổng quan",
+    
+    // --- Login ---
+    "login_sub": "Đăng nhập để vào hệ thống quản lý công việc",
+    "login_emp_code": "Mã Nhân Viên",
+    "login_password": "Password",
+    "login_btn": "Đăng nhập",
+    // --- Enums: Trạng thái & Ưu tiên ---
+    "status_todo": "Chưa làm",
+    "status_pending": "Đang chờ (pending)",
+    "status_doing": "Đang làm",
+    "status_done": "Hoàn thành",
+    "status_closed": "Đã đóng",
+    "pri_high": "Cao",
+    "pri_medium": "Trung bình",
+    "pri_low": "Thấp",
+    
+    // --- Bảng Công việc ---
+    "col_task": "Công việc",
+    "col_pic": "Người phụ trách (PIC)",
+    "col_priority": "Ưu tiên",
+    "col_status": "Trạng thái",
+    "col_start": "Ngày Start",
+    "col_end": "Ngày End",
+    "col_deadline": "Deadline",
+    "col_notes": "Ghi chú",
+
+    // --- Overview & Dashboard ---
+    "total_tasks": "Tổng task",
+    "overdue": "Quá hạn",
+    "completed": "Hoàn thành",
+    "num_employees": "{count} nhân viên",
+    "view_mode_demo": "Chế độ xem thử: chưa cấu hình Firebase, dữ liệu chỉ tồn tại trong phiên này và <b>không dùng chung được với người khác</b>.",
+    "sync_shared_note": "Dữ liệu dùng chung cho cả nhóm, đồng bộ tức thời",
+    "sync_saving": "· đang lưu...",
+    "sync_updated_at": "· cập nhật lúc {time}",
+    "add_department": "Thêm bộ phận",
+    "export_excel": "Xuất Excel",
+    "dashboard_overview": "Dashboard tổng quan các công việc của từng bộ phận trong công ty",
+    // --- Department Page & Tabs ---
+    "dept_subtitle": "Trang quản lý riêng của bộ phận {name}.",
+    "stat_team_total": "Tổng công việc của nhóm",
+    "stat_in_progress": "Đang thực hiện",
+    "stat_completed": "Hoàn thành",
+    "stat_overdue": "Quá hạn",
+    "tab_dashboard": "Dashboard",
+    "tab_employees": "Nhân viên",
+    "tab_tasks": "Task công việc",
+    "tab_machines": "List máy đang work",
+    "btn_add_task": "Thêm công việc",
+    "filter_all_emp": "Tất cả nhân viên",
+    "filter_by_emp": "Lọc theo:",
+    "no_tasks": "Chưa có công việc nào",
+    // --- Forms & Modals ---
+    "form_task_name": "Tên công việc",
+    "form_pic": "Người phụ trách",
+    "form_choose": "Chọn...",
+    "form_priority": "Độ ưu tiên",
+    "form_machine_attach": "Gắn với máy",
+    "form_no_machine": "— Không gắn máy —",
+    "form_notes": "Ghi chú",
+    "form_notes_placeholder": "Ghi chú thêm (không bắt buộc)",
+    "form_start_date": "Ngày Start",
+    "form_end_date": "Ngày End",
+    "form_deadline": "Deadline",
+    "btn_save": "Lưu lại",
+    "btn_cancel": "Hủy bỏ",
+    "btn_delete": "Xóa",
+    "modal_task_detail": "Chi tiết công việc",
+    "modal_status": "Trạng thái",
+    "modal_assigned_emp": "Nhân viên phụ trách",
+    "modal_machine": "Thiết bị / Máy",
+    "filter_hint_click_task": "Nhấn tên công việc để xem chi tiết",
+    "filter_filtering": "Đang lọc: {name}",
+    // --- Tab Nhân viên & Đơn nghỉ ---
+    "card_emp_manage": "Quản lý nhân viên",
+    "btn_add_emp": "Thêm nhân viên",
+    "f_emp_code_ph": "Mã số nhân viên (VD: NV005)",
+    "f_emp_name_ph": "Họ tên",
+    "f_emp_role_ph": "Chức vụ",
+    "f_emp_pass_ph": "Mật khẩu (mặc định: 123456)",
+    "role_manager": "Quản lý",
+    "role_employee": "Nhân viên",
+    "card_leave_manage": "Đơn xin nghỉ phép",
+    "btn_create_leave": "Tạo đơn nghỉ mới",
+    "leave_status_pending": "Chờ duyệt",
+    "leave_status_approved": "Đã duyệt",
+    "leave_status_rejected": "Từ chối",
+    "leave_applicant": "Người xin nghỉ",
+    "leave_reason_ph": "Lý do nghỉ...",
+    "leave_from_date": "Từ ngày",
+    "leave_to_date": "Đến ngày",
+    "empty_leaves": "Chưa có đơn nghỉ nào.",
+    "card_calendar": "Lịch làm việc & Nghỉ phép",
+    "cal_days": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+    "month_format": "Tháng {m}/{y}",
+    "select_emp": "Chọn nhân viên",
+    "btn_create": "Tạo đơn",
+    
+    // --- Tab Máy ---
+    "machine_delivery_date": "Ngày giao hàng: {date}",
+    "machine_status_done": "Đã xong",
+    "machine_status_running": "Đang chạy",
+    "machine_add_task": "Thêm việc cho máy",
+    "machine_mark_completed": "Đánh dấu hoàn thành",
+    "machine_reopen": "Khôi phục đang chạy",
+    "machine_status_summary": "{active} máy đang chạy · {completed} máy đã hoàn thành",
+    "btn_add_machine": "Thêm máy mới",
+    "f_machine_name": "Tên máy",
+    "f_machine_name_ph": "VD: Máy C - X198",
+    "f_machine_delivery": "Ngày giao hàng",
+    "f_machine_spec": "Spec",
+    "f_machine_spec_ph": "Thông số kỹ thuật, cấu hình...",
+    "btn_save_machine": "Thêm máy",
+    "empty_active_machines": "Chưa có máy nào đang chạy trong bộ phận này.",
+    "completed_machines_title": "Máy cũ đã hoàn thành ({count})",
+    "empty_completed_machines": "Chưa có máy nào hoàn thành.",
+    "machine_empty_group": "— trống —",
+
+    // --- Dashboard ---
+    "donut_completed": "hoàn thành",
+    "emp_bar_completed": "{done}/{cnt} hoàn thành",
+    "empty_personnel": "Chưa có nhân sự nào.",
+    "unassigned": "Chưa gán",
+    "no_overdue_tasks": "Không có công việc quá hạn 🎉",
+    "empty_recent_done": "Chưa có công việc nào hoàn thành.",
+    "card_task_status": "Trạng thái công việc",
+    "card_task_by_emp": "Công việc theo nhân viên",
+    "card_overdue_tasks": "Công việc trễ deadline",
+    "card_recent_done": "Công việc đã hoàn thành gần đây",
+
+    // --- Bổ sung chi tiết bảng & cảnh báo ---
+    "empty_dept_employees": "Chưa có nhân viên nào trong bộ phận này.",
+    "no_tasks_table": "Không có công việc nào.",
+    "drag_row_height": "Kéo để chỉnh chiều cao hàng",
+    "notes_placeholder": "Ghi chú...",
+    "deleted_user": "Đã xoá",
+    "err_perm_add_emp": "Bạn không có quyền thêm nhân viên",
+    "err_perm_del_emp": "Bạn không có quyền xoá nhân viên",
+    "err_perm_approve_leave": "Bạn không có quyền duyệt đơn nghỉ phép",
+    "err_perm_del_leave": "Bạn không có quyền xoá đơn nghỉ phép",
+    "err_perm_add_task": "Bạn không có quyền thêm công việc mới",
+    "err_perm_edit_task": "Bạn chỉ có thể chỉnh sửa/cập nhật công việc được giao cho chính mình",
+    "err_perm_del_task": "Bạn không có quyền xoá công việc này",
+    "err_perm_status_close": "Chỉ Quản lý mới có quyền Đóng công việc hoặc mở lại công việc đã đóng",
+    "err_perm_only_pic_status": "Chỉ nhân viên phụ trách mới có quyền cập nhật tiến độ công việc này",
+    "btn_close_task": "Đóng việc",
+    "btn_reopen_task": "Mở lại việc",
+    "err_perm_add_dept": "Bạn không có quyền thêm bộ phận mới",
+    "err_perm_add_machine": "Bạn không có quyền thêm máy mới",
+    "err_perm_toggle_machine": "Bạn không có quyền cập nhật trạng thái máy",
+    "err_perm_reset": "Bạn không có quyền khôi phục dữ liệu mẫu",
+    "err_perm_export": "Bạn không có quyền xuất dữ liệu Excel",
+    "f_emp_access_level": "Phân quyền",
+    
+    // --- Xuất Excel ---
+    "excel_sheet_tasks": "Công việc",
+    "excel_sheet_employees": "Nhân sự",
+    "excel_sheet_machines": "Máy",
+    "excel_col_dept": "Bộ phận",
+    "excel_col_task_name": "Tên công việc",
+    "excel_col_pic": "Người phụ trách",
+    "excel_col_machine": "Máy",
+    "excel_col_priority": "Độ ưu tiên",
+    "excel_col_status": "Trạng thái",
+    "excel_col_start": "Ngày bắt đầu",
+    "excel_col_end": "Ngày kết thúc",
+    "excel_col_deadline": "Deadline",
+    "excel_col_overdue": "Quá hạn",
+    "excel_col_notes": "Ghi chú",
+    "excel_col_emp_code": "Mã NV",
+    "excel_col_emp_name": "Tên nhân viên",
+    "excel_col_role": "Chức vụ",
+    "excel_col_task_count": "Số công việc",
+    "excel_col_machine_name": "Tên máy",
+    "excel_col_delivery_date": "Ngày giao hàng",
+    "excel_col_spec": "Spec",
+    "excel_val_yes": "Có",
+    "excel_val_no": "Không",
+    "excel_val_running": "Đang chạy",
+    "excel_val_completed": "Đã hoàn thành",
+  },
+  en: {
+    // --- Header chung ---
+    "app_title": "TAZMO VIETNAM",
+    "hello": "Hello, <b>{name}</b>",
+    "logout": "Logout",
+    "overview": "Overview",
+    
+    // --- Login ---
+    "login_sub": "Login to access the task management system",
+    "login_emp_code": "Employee Code",
+    "login_password": "Password",
+    "login_btn": "Login",
+    // --- Enums: Trạng thái & Ưu tiên ---
+    "status_todo": "To Do",
+    "status_pending": "Pending",
+    "status_doing": "In Progress",
+    "status_done": "Done",
+    "status_closed": "Closed",
+    "pri_high": "High",
+    "pri_medium": "Medium",
+    "pri_low": "Low",
+    
+    // --- Bảng Công việc ---
+    "col_task": "Task",
+    "col_pic": "Person in Charge (PIC)",
+    "col_priority": "Priority",
+    "col_status": "Status",
+    "col_start": "Start Date",
+    "col_end": "End Date",
+    "col_deadline": "Deadline",
+    "col_notes": "Notes",
+    // --- Overview & Dashboard ---
+    "total_tasks": "Total Tasks",
+    "overdue": "Overdue",
+    "completed": "Completed",
+    "num_employees": "{count} employees",
+    "view_mode_demo": "Demo mode: Firebase not configured, data exists only in this session and <b>cannot be shared</b>.",
+    "sync_shared_note": "Shared team data, real-time sync",
+    "sync_saving": "· saving...",
+    "sync_updated_at": "· updated at {time}",
+    "add_department": "Add Department",
+    "export_excel": "Export Excel",
+    "dashboard_overview": "Overview dashboard of tasks across all company departments",
+    // --- Department Page & Tabs ---
+    "dept_subtitle": "Dedicated management page for {name} department.",
+    "stat_team_total": "Total team tasks",
+    "stat_in_progress": "In Progress",
+    "stat_completed": "Completed",
+    "stat_overdue": "Overdue",
+    "tab_dashboard": "Dashboard",
+    "tab_employees": "Employees",
+    "tab_tasks": "Tasks",
+    "tab_machines": "Machine List",
+    "btn_add_task": "Add Task",
+    "filter_all_emp": "All employees",
+    "filter_by_emp": "Filter by:",
+    "no_tasks": "No tasks yet",
+
+    // --- Forms & Modals ---
+    "form_task_name": "Task Name",
+    "form_pic": "Person in Charge (PIC)",
+    "form_choose": "Select...",
+    "form_priority": "Priority",
+    "form_machine_attach": "Assigned Machine",
+    "form_no_machine": "— No Machine —",
+    "form_notes": "Notes",
+    "form_notes_placeholder": "Additional notes (optional)",
+    "form_start_date": "Start Date",
+    "form_end_date": "End Date",
+    "form_deadline": "Deadline",
+    "btn_save": "Save",
+    "btn_cancel": "Cancel",
+    "btn_delete": "Delete",
+    "modal_task_detail": "Task Details",
+    "modal_status": "Status",
+    "modal_assigned_emp": "Assigned Employee",
+    "modal_machine": "Equipment / Machine",
+    "filter_hint_click_task": "Click task name to view details",
+    "filter_filtering": "Filtering: {name}",
+    
+    // --- Tab Nhân viên & Đơn nghỉ ---
+    "card_emp_manage": "Employee Management",
+    "btn_add_emp": "Add Employee",
+    "f_emp_code_ph": "Employee Code (e.g. NV005)",
+    "f_emp_name_ph": "Full Name",
+    "f_emp_role_ph": "Job Title / Role",
+    "f_emp_pass_ph": "Password (default: 123456)",
+    "role_manager": "Manager",
+    "role_employee": "Employee",
+    "card_leave_manage": "Leave Requests",
+    "btn_create_leave": "Request Leave",
+    "leave_status_pending": "Pending",
+    "leave_status_approved": "Approved",
+    "leave_status_rejected": "Rejected",
+    "leave_applicant": "Applicant",
+    "leave_reason_ph": "Reason for leave...",
+    "leave_from_date": "From date",
+    "leave_to_date": "To date",
+    "empty_leaves": "No leave requests yet.",
+    "card_calendar": "Work & Leave Calendar",
+    "cal_days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "month_format": "{m}/{y}",
+    "select_emp": "Select employee",
+    "btn_create": "Create",
+
+    // --- Tab Máy ---
+    "machine_delivery_date": "Delivery date: {date}",
+    "machine_status_done": "Completed",
+    "machine_status_running": "Active",
+    "machine_add_task": "Add task for machine",
+    "machine_mark_completed": "Mark as Completed",
+    "machine_reopen": "Reopen to Active",
+    "machine_status_summary": "{active} active · {completed} completed",
+    "btn_add_machine": "Add New Machine",
+    "f_machine_name": "Machine Name",
+    "f_machine_name_ph": "e.g. Machine C - X198",
+    "f_machine_delivery": "Delivery Date",
+    "f_machine_spec": "Spec",
+    "f_machine_spec_ph": "Specifications, configuration...",
+    "btn_save_machine": "Add Machine",
+    "empty_active_machines": "No active machines in this department.",
+    "completed_machines_title": "Completed machines ({count})",
+    "empty_completed_machines": "No completed machines.",
+    "machine_empty_group": "— empty —",
+
+    // --- Dashboard ---
+    "donut_completed": "completed",
+    "emp_bar_completed": "{done}/{cnt} completed",
+    "empty_personnel": "No personnel yet.",
+    "unassigned": "Unassigned",
+    "no_overdue_tasks": "No overdue tasks 🎉",
+    "empty_recent_done": "No completed tasks yet.",
+    "card_task_status": "Task Status",
+    "card_task_by_emp": "Tasks by Employee",
+    "card_overdue_tasks": "Overdue Tasks",
+    "card_recent_done": "Recently Completed Tasks",
+
+    // --- Extra table details & permissions ---
+    "empty_dept_employees": "No employees in this department.",
+    "no_tasks_table": "No tasks found.",
+    "drag_row_height": "Drag to adjust row height",
+    "notes_placeholder": "Notes...",
+    "deleted_user": "Deleted",
+    "err_perm_add_emp": "You do not have permission to add employees",
+    "err_perm_del_emp": "You do not have permission to delete employees",
+    "err_perm_approve_leave": "You do not have permission to approve leave requests",
+    "err_perm_del_leave": "You do not have permission to delete leave requests",
+    "err_perm_add_task": "You do not have permission to add new tasks",
+    "err_perm_edit_task": "You can only edit/update tasks assigned to you",
+    "err_perm_del_task": "You do not have permission to delete this task",
+    "err_perm_status_close": "Only Managers can close or reopen closed tasks",
+    "err_perm_only_pic_status": "Only the assigned PIC can update this task's progress",
+    "btn_close_task": "Close Task",
+    "btn_reopen_task": "Reopen Task",
+    "err_perm_add_dept": "You do not have permission to add new departments",
+    "err_perm_add_machine": "You do not have permission to add new machines",
+    "err_perm_toggle_machine": "You do not have permission to update machine status",
+    "err_perm_reset": "You do not have permission to reset system data",
+    "err_perm_export": "You do not have permission to export data",
+    "f_emp_access_level": "Access Role",
+    
+    // --- Export Excel ---
+    "excel_sheet_tasks": "Tasks",
+    "excel_sheet_employees": "Personnel",
+    "excel_sheet_machines": "Machines",
+    "excel_col_dept": "Department",
+    "excel_col_task_name": "Task Name",
+    "excel_col_pic": "Person in Charge",
+    "excel_col_machine": "Machine",
+    "excel_col_priority": "Priority",
+    "excel_col_status": "Status",
+    "excel_col_start": "Start Date",
+    "excel_col_end": "End Date",
+    "excel_col_deadline": "Deadline",
+    "excel_col_overdue": "Overdue",
+    "excel_col_notes": "Notes",
+    "excel_col_emp_code": "Employee Code",
+    "excel_col_emp_name": "Employee Name",
+    "excel_col_role": "Role / Position",
+    "excel_col_task_count": "Task Count",
+    "excel_col_machine_name": "Machine Name",
+    "excel_col_delivery_date": "Delivery Date",
+    "excel_col_spec": "Spec",
+    "excel_val_yes": "Yes",
+    "excel_val_no": "No",
+    "excel_val_running": "Active",
+    "excel_val_completed": "Completed",
+  }
+};
+
+let currentLang = localStorage.getItem("app_lang") || "vi";
+
+// Hàm dịch cốt lõi: t('login_btn') -> trả về "Đăng nhập" hoặc "Login"
+function t(key, params = {}) {
+    let text = TRANSLATIONS[currentLang]?.[key] || TRANSLATIONS["vi"]?.[key] || key;
+    
+    // Nội suy tham số động (VD: {name})
+    for (const [k, v] of Object.entries(params)) {
+        text = text.replace(new RegExp(`{${k}}`, "g"), v);
+    }
+    return text;
+}
+
+// Hàm đổi ngôn ngữ (gọi từ nút bấm)
+function setLanguage(lang) {
+    if (lang !== "vi" && lang !== "en") return;
+    currentLang = lang;
+    localStorage.setItem("app_lang", lang);
+    //Vẽ lại giao diện ngay lập tức
+    if (typeof render == "function") render();
+}
+
+// Hàm render UI nút chuyển ngôn ngữ
+function renderLangSwitcher() {
+  return `
+    <div class="lang-switcher">
+      <button class="${currentLang === 'vi' ? 'active' : ''}" onclick="setLanguage('vi')">🇻🇳 VI</button>
+      <button class="${currentLang === 'en' ? 'active' : ''}" onclick="setLanguage('en')">🇬🇧 EN</button>
+    </div>
+  `;
+}

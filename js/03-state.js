@@ -22,7 +22,21 @@ let loginError = "";
 let calEmpId = null;
 let calMonth = new Date(2026, 7, 1); // tháng hiện hành của app (08/2026)
 
-const COL_LABELS = ["Công việc", "Người phụ trách (PIC)", "Ưu tiên", "Trạng thái", "Ngày Start", "Ngày End", "Deadline", "Ghi chú", ""];
+//Sử dụng hàm để luôn lấy nhãn theo ngôn ngữ hiện tại
+function getColLabels() {
+  return [
+    t("col_task"),
+    t("col_pic"),
+    t("col_priority"),
+    t("col_status"),
+    t("col_start"),
+    t("col_end"),
+    t("col_deadline"),
+    t("col_notes"),
+    ""
+  ];
+}
+
 let colWidths = [220, 150, 100, 150, 105, 105, 105, 190, 90];
 let rowHeights = {};
 

@@ -22,8 +22,8 @@ async function addLeave() {
   await saveData();
 }
 async function setLeaveStatus(id, status) {
-  if (!hasPermission('leave:approve')){
-    alert('Bạn không có quyền duyệt đơn nghỉ phép');
+  if (!hasPermission('leave:approve')) {
+    alert(t("err_perm_approve_leave"));
     return;
   }
   
@@ -34,10 +34,11 @@ async function setLeaveStatus(id, status) {
   await saveData();
 }
 async function deleteLeave(id) {
-  if (!hasPermission('leave:approve')){
-    const leaveRequest = leaveRequests.find((x) => x.id === id);
-    if (!leaveRequest || leaveRequest.employeeId !== currentUser.id || leaveRequest.status !== 'pending'){
-      alert('Bạn không có quyền xoá đơn nghỉ phép');
+  const l = leaveRequests.find((x) => x.id === id);
+  if (!l) return;
+  if (!hasPermission('leave:approve')) {
+    if (l.employeeId !== currentUser.id || l.status !== "pending") {
+      alert(t("err_perm_del_leave"));
       return;
     }
   }

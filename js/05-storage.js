@@ -21,7 +21,10 @@ function initStorage() {
       if (snap.exists) {
         const data = snap.data();
         departments = data.departments || seedDepartments.slice();
-        employees = data.employees || [];
+        employees = (data.employees || []).map((e) => ({
+          ...e,
+          accessLevel: e.accessLevel || (e.role && e.role.toLowerCase().includes("quản lý") ? "manager" : "employee")
+        }));
         tasks = data.tasks || [];
         leaveRequests = data.leaveRequests || [];
         machines = data.machines || [];

@@ -6,13 +6,15 @@
 /* ===================== EMPLOYEE ACTIONS ===================== */
 async function addEmployee() {
   if (!hasPermission('employee:add')){
-    alert('Bạn không có quyền thêm nhân viên');
+    alert(t("err_perm_add_emp"));
     return;
   }
   const code = document.getElementById("f-ecode").value.trim();
   const name = document.getElementById("f-ename").value.trim();
   const role = document.getElementById("f-erole").value.trim();
   const pass = document.getElementById("f-epass").value.trim();
+  const accessLevelEl = document.getElementById("f-eaccess");
+  const accessLevel = accessLevelEl ? accessLevelEl.value : "employee";
   const errEl = document.getElementById("f-emp-error");
   if (!code || !name) { if (errEl) errEl.textContent = "Vui lòng nhập mã số và tên nhân viên."; return; }
   if (employees.some((e) => e.code.toLowerCase() === code.toLowerCase())) {
@@ -20,14 +22,14 @@ async function addEmployee() {
     return;
   }
   const color = PALETTE[employees.length % PALETTE.length];
-  employees.push({ id: uid("e"), code, name, role: role || "Nhân viên", password: pass || code, departmentId: activeDeptId, color });
+  employees.push({ id: uid("e"), code, name, role: role || "Nhân viên", password: pass || code, departmentId: activeDeptId, color, accessLevel });
   showEmpForm = false;
   render();
   await saveData();
 }
 async function deleteEmployee(id) {
-  if (!hasPermission('employee:delete')){
-    alert('Bạn không có quyền xoá nhân viên');
+  if (!hasPermission('employee:delete')) {
+    alert(t("err_perm_del_emp"));
     return;
   }
   if (!confirm("Xoá nhân viên này? Các công việc đã giao sẽ chuyển về trạng thái Chưa gán.")) return;

@@ -312,3 +312,34 @@
 
   svg.ic { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   svg.ic-lg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* =========================================
+   LANGUAGE SWITCHER
+   ========================================= */
+.lang-switcher {
+  display: inline-flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-right: 16px; /* Cách các nút khác (đăng xuất) một chút */
+  vertical-align: middle;
+}
+.lang-switcher button {
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-faint);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.lang-switcher button.active {
+  background: var(--primary);
+  color: var(--text);
+}
+.lang-switcher button:hover:not(.active) {
+  background: var(--bg-body);
+}

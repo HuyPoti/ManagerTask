@@ -15,8 +15,9 @@ function buildCalendar(empId, monthDate) {
   const firstDow = (new Date(year, month, 1).getDay() + 6) % 7; // T2 = 0
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const todayStr = new Date().toISOString().slice(0, 10);
-  const dows = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-  let cells = dows.map((d) => `<div class="cal-dow">${d}</div>`).join("");
+  // Mới:
+  const dayNames = (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang].cal_days) || ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  let cells = dayNames.map((d) => `<div class="cal-dow">${d}</div>`).join("");
   for (let i = 0; i < firstDow; i++) cells += `<div class="cal-cell empty"></div>`;
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${pad2(month + 1)}-${pad2(day)}`;
@@ -27,7 +28,8 @@ function buildCalendar(empId, monthDate) {
     if (weekend) cls.push("weekend");
     if (onLeave) cls.push("leave");
     if (dateStr === todayStr) cls.push("today");
-    cells += `<div class="${cls.join(" ")}" title="${onLeave ? "Nghỉ phép" : weekend ? "Cuối tuần" : "Đi làm"}">${day}</div>`;
+    const cellTitle = onLeave ? t("calendar_leave") : weekend ? t("calendar_weekend") : t("calendar_working");
+    cells += `<div class="${cls.join(" ")}" title="${cellTitle}">${day}</div>`;
   }
   return `<div class="cal-grid">${cells}</div>`;
 }

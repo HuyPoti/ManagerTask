@@ -45,5 +45,7 @@ const ICONS = {
   clipboard: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
   wrench: '<path d="M14.7 6.3a4 4 0 1 1-5.66 5.66L3 18v3h3l6.04-6.04a4 4 0 1 1 5.66-5.66z"/>',
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  lock: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  unlock: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
 };
 function ic(name, cls) { return '<svg class="' + (cls || 'ic') + '" viewBox="0 0 24 24">' + ICONS[name] + '</svg>'; }

@@ -18,14 +18,16 @@ function renderOverviewPage() {
     const pendingCount = dTasks.filter((t) => t.status === "pending").length;
     const doingCount = dTasks.filter((t) => t.status === "doing").length;
     const done = dTasks.filter((t) => t.status === "done").length;
+    const closed = dTasks.filter((t) => t.status === "closed").length;
     const overdue = dTasks.filter((t) => isOverdue(t)).length;
-    const pct = dTasks.length ? Math.round((done / dTasks.length) * 100) : 0;
+    const pct = dTasks.length ? Math.round(((done + closed) / dTasks.length) * 100) : 0;
     const miniDonut = buildDonut(
       [
         { value: todoCount, color: "border-strong" },
         { value: pendingCount, color: "amber" },
         { value: doingCount, color: "teal" },
         { value: done, color: "green" },
+        { value: closed, color: "purple" },
       ],
       { size: 82, thickness: 12, centerLabel: pct + "%", centerSub: "" }
     );
@@ -36,15 +38,15 @@ function renderOverviewPage() {
             <div class="dept-badge" style="background:var(--${d.color}-soft);color:var(--${d.color})">${escapeHtml(d.name.slice(0, 2).toUpperCase())}</div>
             <div>
               <div class="dept-name">${escapeHtml(d.name)}</div>
-              <div class="dept-sub">${dEmps.length} nhân viên</div>
+              <div class="dept-sub">${t('num_employees', { count: dEmps.length })}</div>
             </div>
           </div>
           ${miniDonut}
         </div>
         <div class="dept-stats-row">
-          <div class="dept-stat"><b>${dTasks.length}</b>Tổng task</div>
-          <div class="dept-stat"><b style="${overdue > 0 ? 'color:var(--red)' : ''}">${overdue}</b>Quá hạn</div>
-          <div class="dept-stat"><b>${pct}%</b>Hoàn thành</div>
+          <div class="dept-stat"><b>${dTasks.length}</b>${t('total_tasks')}</div>
+          <div class="dept-stat"><b style="${overdue > 0 ? 'color:var(--red)' : ''}">${overdue}</b>${t('overdue')}</div>
+          <div class="dept-stat"><b>${pct}%</b>${t('completed')}</div>
         </div>
       </button>
     `;
@@ -55,26 +57,31 @@ function renderOverviewPage() {
       <div>
         <div class="title-row"><span class="title">TAZMO VIỆT NAM</span></div>
       </div>
-      <div class="user-chip">${ic("users")}<span class="who">Xin chào, <b>${escapeHtml(currentUser.name)}</b></span><button class="logout-btn" onclick="logout()">${ic("logout")} Đăng xuất</button></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        ${renderLangSwitcher()}
+        <div class="user-chip">${ic("users")}<span class="who">${t("hello", { name: escapeHtml(currentUser.name) })}</span><button class="logout-btn" onclick="logout()">${ic("logout")} ${t("logout")}</button></div>
+      </div>
     </div>
     <div class="toolbar">
-      <div class="toolbar-left"><span class="section-title" style="margin:0">${ic("grid")} Dashboard tổng quan các công việc của từng bộ phận trong công ty</span></div>
-      <div class="toolbar-actions"><button class="export-btn" onclick="exportExcel()">${ic("download")} Xuất Excel</button></div>
+      <div class="toolbar-left"><span class="section-title" style="margin:0">${ic("grid")} ${t("dashboard_overview")}</span></div>
+      ${hasPermission('data:export') ? `<div class="toolbar-actions"><button class="export-btn" onclick="exportExcel()">${ic("download")} ${t("export_excel")}</button></div>` : ""}
     </div>
     <div class="dept-grid">
       ${deptCards}
-      ${!showDeptForm
-        ? `<button class="dept-card" style="align-items:center;justify-content:center;color:var(--text-faint)" onclick="showDeptForm=true;render()">${ic("plus", "ic-lg")}<span style="margin-top:6px;font-size:12.5px">Thêm bộ phận</span></button>`
-        : `<div class="dept-card" style="cursor:default">
-             <div class="field-label">Tên bộ phận mới</div>
-             <input id="f-dname" placeholder="VD: Kỹ thuật QC" />
-             <div id="f-dept-error" class="form-error"></div>
-             <div class="form-actions">
-               <button class="btn-primary" onclick="addDepartment()">Thêm</button>
-               <button onclick="showDeptForm=false;render()">Huỷ</button>
-             </div>
-           </div>`}
+      ${hasPermission('department:add') ? (
+        !showDeptForm
+          ? `<button class="dept-card" style="align-items:center;justify-content:center;color:var(--text-faint)" onclick="showDeptForm=true;render()">${ic("plus", "ic-lg")}<span style="margin-top:6px;font-size:12.5px">Thêm bộ phận</span></button>`
+          : `<div class="dept-card" style="cursor:default">
+               <div class="field-label">Tên bộ phận mới</div>
+               <input id="f-dname" placeholder="VD: Kỹ thuật QC" />
+               <div id="f-dept-error" class="form-error"></div>
+               <div class="form-actions">
+                 <button class="btn-primary" onclick="addDepartment()">Thêm</button>
+                 <button onclick="showDeptForm=false;render()">Huỷ</button>
+               </div>
+             </div>`
+      ) : ""}
     </div>
-    <button class="reset-link" style="margin-top:22px" onclick="resetData()">Khôi phục dữ liệu mẫu</button>
+    ${hasPermission('system:reset') ? `<button class="reset-link" style="margin-top:22px" onclick="resetData()">Khôi phục dữ liệu mẫu</button>` : ""}
   `;
 }
