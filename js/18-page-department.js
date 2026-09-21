@@ -51,7 +51,7 @@ function renderDepartment() {
         <button class="view-tab ${deptTab === "dashboard" ? "active" : ""}" onclick="setDeptTab('dashboard')">${ic("grid")} ${t("tab_dashboard")}</button>
         <button class="view-tab ${deptTab === "employees" ? "active" : ""}" onclick="setDeptTab('employees')">${ic("users")} ${t("tab_employees")}</button>
         <button class="view-tab ${deptTab === "tasks" ? "active" : ""}" onclick="setDeptTab('tasks')">${ic("clipboard")} ${t("tab_tasks")}</button>
-        <button class="view-tab ${deptTab === "machines" ? "active" : ""}" onclick="setDeptTab('machines')">${ic("wrench")} ${t("tab_machines")}</button>
+        <button class="view-tab ${deptTab === "machines" ? "active" : ""}" onclick="setDeptTab('machines')">${isOfficeDept(dept) ? ic("folder") : ic("wrench")} ${isOfficeDept(dept) ? t("tab_machines_office") : t("tab_machines_tech")}</button>
       </div>
       ${hasPermission('data:export') ? `<div class="toolbar-actions"><button class="export-btn" onclick="exportExcel()">${ic("download")} ${t("export_excel")}</button></div>` : ""}
     </div>
@@ -290,8 +290,8 @@ function renderDeptTasksTab(dept) {
             </div>
           </div>
           <div class="task-form-row3">
-            <div><label class="field-label">${t("form_machine_attach")}</label>
-              <select id="f-machine" style="width:100%"><option value="">${t("form_no_machine")}</option>${machineOptions}</select>
+            <div><label class="field-label">${isOfficeDept(dept) ? t("form_project_attach") : t("form_machine_attach")}</label>
+              <select id="f-machine" style="width:100%"><option value="">${isOfficeDept(dept) ? t("form_no_project") : t("form_no_machine")}</option>${machineOptions}</select>
             </div>
             <div><label class="field-label">${t("form_notes")}</label><textarea id="f-notes" placeholder="${t("form_notes_placeholder")}"></textarea></div>
           </div>
@@ -344,7 +344,7 @@ function renderDeptTasksTab(dept) {
                     <td><span class="badge mono" style="color:var(--${prio.color});border-color:var(--${prio.color})">${prio.label}</span></td>
                     <td>
                       ${
-                        isPic && task.status !== 'closed'
+                        isPic && task.status !== 'closed' && (!overdue || hasPermission('task:edit'))
                           ? `<select class="status-select" style="color:var(--${st.color});border-color:var(--${st.color})" onchange="setStatus('${task.id}',this.value)">
                               ${progressOpts.map((s) => `<option value="${s.key}" ${s.key === task.status ? "selected" : ""}>${s.label}</option>`).join("")}
                             </select>`
@@ -398,6 +398,7 @@ function machineTaskGroup(title, list) {
   `;
 }
 function renderMachineCard(m, dept) {
+  const isOffice = isOfficeDept(dept);
   const mTasks = tasks.filter((t) => t.machineId === m.id);
   const doing = mTasks.filter((t) => t.status === "doing");
   const pending = mTasks.filter((t) => t.status === "pending");
@@ -412,7 +413,7 @@ function renderMachineCard(m, dept) {
       <div class="machine-head">
         <div>
           <div class="machine-name">${escapeHtml(m.name)}</div>
-          <div class="machine-meta">${ic("calendar")} ${t("machine_delivery_date", { date: fmtDate(m.deliveryDate) })}</div>
+          <div class="machine-meta">${ic("calendar")} ${isOffice ? t("project_delivery_date", { date: fmtDate(m.deliveryDate) }) : t("machine_delivery_date", { date: fmtDate(m.deliveryDate) })}</div>
         </div>
         <span class="badge mono" style="color:var(--${m.completed ? "green" : "teal"});border-color:var(--${m.completed ? "green" : "teal"})">${m.completed ? t("machine_status_done") : t("machine_status_running")}</span>
       </div>
@@ -426,33 +427,34 @@ function renderMachineCard(m, dept) {
       </div>
       ${machineTaskGroup(t("pri_high"), highPrio)}
       <div class="machine-actions">
-        ${hasPermission('task:create') ? `<button onclick="deptTab='tasks';showTaskForm=true;render();document.getElementById('f-machine') && (document.getElementById('f-machine').value='${m.id}')">${ic("plus")} ${t("machine_add_task")}</button>` : ""}
+        ${hasPermission('task:create') ? `<button onclick="deptTab='tasks';showTaskForm=true;render();document.getElementById('f-machine') && (document.getElementById('f-machine').value='${m.id}')">${ic("plus")} ${isOffice ? t("project_add_task") : t("machine_add_task")}</button>` : ""}
         ${hasPermission('machine:toggle') ? `<button class="${m.completed ? "" : "btn-primary"}" onclick="toggleMachineCompleted('${m.id}')">${m.completed ? t("machine_reopen") : t("machine_mark_completed")}</button>` : ""}
       </div>
     </div>
   `;
 }
 function renderDeptMachinesTab(dept) {
+  const isOffice = isOfficeDept(dept);
   const all = deptMachines(dept.id);
   const active = all.filter((m) => !m.completed);
   const completed = all.filter((m) => m.completed);
   return `
     <div class="toolbar">
-      <div class="toolbar-left"><span style="font-size:12.5px;color:var(--text-faint)">${t("machine_status_summary", { active: active.length, completed: completed.length })}</span></div>
-      ${hasPermission('machine:add') ? `<div class="toolbar-actions"><button class="add-task-btn" onclick="showMachineForm=!showMachineForm;render()">${ic("plus")} ${t("btn_add_machine")}</button></div>` : ""}
+      <div class="toolbar-left"><span style="font-size:12.5px;color:var(--text-faint)">${isOffice ? t("project_status_summary", { active: active.length, completed: completed.length }) : t("machine_status_summary", { active: active.length, completed: completed.length })}</span></div>
+      ${hasPermission('machine:add') ? `<div class="toolbar-actions"><button class="add-task-btn" onclick="showMachineForm=!showMachineForm;render()">${ic("plus")} ${isOffice ? t("btn_add_project") : t("btn_add_machine")}</button></div>` : ""}
     </div>
     ${
       showMachineForm
         ? `
       <div class="task-form">
         <div class="task-form-row">
-          <div><label class="field-label">${t("f_machine_name")}</label><input id="f-mname" placeholder="${t("f_machine_name_ph")}" style="width:100%" /></div>
-          <div><label class="field-label">${t("f_machine_delivery")}</label><input id="f-mdate" type="date" style="width:100%" /></div>
+          <div><label class="field-label">${isOffice ? t("f_project_name") : t("f_machine_name")}</label><input id="f-mname" placeholder="${isOffice ? t("f_project_name_ph") : t("f_machine_name_ph")}" style="width:100%" /></div>
+          <div><label class="field-label">${isOffice ? t("f_project_delivery") : t("f_machine_delivery")}</label><input id="f-mdate" type="date" style="width:100%" /></div>
           <div></div>
         </div>
-        <div><label class="field-label">${t("f_machine_spec")}</label><textarea id="f-mspec" placeholder="${t("f_machine_spec_ph")}" style="width:100%"></textarea></div>
+        <div><label class="field-label">${isOffice ? t("f_project_spec") : t("f_machine_spec")}</label><textarea id="f-mspec" placeholder="${isOffice ? t("f_project_spec_ph") : t("f_machine_spec_ph")}" style="width:100%"></textarea></div>
         <div class="form-actions" style="max-width:220px">
-          <button class="btn-primary" onclick="addMachine()">${t("btn_save_machine")}</button>
+          <button class="btn-primary" onclick="addMachine()">${isOffice ? t("btn_save_project") : t("btn_save_machine")}</button>
           <button onclick="showMachineForm=false;render()">${t("btn_cancel")}</button>
         </div>
         <div id="f-machine-error" class="form-error"></div>
@@ -461,11 +463,11 @@ function renderDeptMachinesTab(dept) {
         : ""
     }
 
-    ${active.length ? `<div class="machine-grid">${active.map((m) => renderMachineCard(m, dept)).join("")}</div>` : `<div class="empty-table">${t("empty_active_machines")}</div>`}
+    ${active.length ? `<div class="machine-grid">${active.map((m) => renderMachineCard(m, dept)).join("")}</div>` : `<div class="empty-table">${isOffice ? t("empty_active_projects") : t("empty_active_machines")}</div>`}
 
     <div class="section-title" style="cursor:pointer" onclick="toggleShowCompletedMachines()">
-      ${ic("check")} ${t("completed_machines_title", { count: completed.length })} ${showCompletedMachines ? "▲" : "▼"}
+      ${ic("check")} ${isOffice ? t("completed_projects_title", { count: completed.length }) : t("completed_machines_title", { count: completed.length })} ${showCompletedMachines ? "▲" : "▼"}
     </div>
-    ${showCompletedMachines ? (completed.length ? `<div class="machine-grid">${completed.map((m) => renderMachineCard(m, dept)).join("")}</div>` : `<div class="empty-table">${t("empty_completed_machines")}</div>`) : ""}
+    ${showCompletedMachines ? (completed.length ? `<div class="machine-grid">${completed.map((m) => renderMachineCard(m, dept)).join("")}</div>` : `<div class="empty-table">${isOffice ? t("empty_completed_projects") : t("empty_completed_machines")}</div>`) : ""}
   `;
 }

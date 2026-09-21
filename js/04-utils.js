@@ -32,6 +32,12 @@ function deptTasks(deptId) { return tasks.filter((t) => t.departmentId === deptI
 function deptMachines(deptId) { return machines.filter((m) => m.departmentId === deptId); }
 function deptLeaves(deptId) { return leaveRequests.filter((l) => l.departmentId === deptId); }
 function taskCountFor(empId) { return tasks.filter((t) => t.assigneeId === empId).length; }
+function isOfficeDept(dept) {
+  if (!dept) return false;
+  if (dept.hasMachine === false || dept.type === 'office') return true;
+  const name = (dept.name || "").toLowerCase();
+  return name.includes("kế toán") || name.includes("nhân sự") || name.includes("hành chính") || name.includes("accounting") || name.includes("hr");
+}
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
@@ -76,6 +82,8 @@ function hasPermission(action) {
 function canEditTask(task) {
   if (!currentUser || !task) return false;
   if (hasPermission('task:edit')) return true;
+  // Nhân viên phụ trách (PIC) không được sửa nếu task đã quá hạn
+  if (isOverdue(task)) return false;
   return task.assigneeId === currentUser.id;
 }
 
@@ -90,6 +98,10 @@ function canChangeTaskStatus(task, newStatus) {
     return hasPermission('task:status_close');
   }
   // Các trạng thái tiến độ thông thường (todo, doing, pending, done):
+  // Nếu task quá hạn, nhân viên không được tự ý đổi trạng thái (chỉ Manager có quyền can thiệp)
+  if (isOverdue(task) && !hasPermission('task:edit')) {
+    return false;
+  }
   // Chỉ người phụ trách (PIC) mới có quyền cập nhật
   if (hasPermission('task:status_self') && task.assigneeId === currentUser.id) {
     return true;

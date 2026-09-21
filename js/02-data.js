@@ -26,9 +26,9 @@ const PRIORITY = {
 
 
 const seedDepartments = [
-  { id: "d1", name: "Thiết Kế Điện", color: "blue" },
-  { id: "d2", name: "Thiết Kế Cơ Khí", color: "teal" },
-  { id: "d3", name: "Kế Toán", color: "amber" },
+  { id: "d1", name: "Thiết Kế Điện", color: "blue", type: "tech", hasMachine: true },
+  { id: "d2", name: "Thiết Kế Cơ Khí", color: "teal", type: "tech", hasMachine: true },
+  { id: "d3", name: "Kế Toán", color: "amber", type: "office", hasMachine: false },
 ];
 const seedEmployees = [
   { id: "e1", code: "NV001", name: "Minh Tuấn", role: "Kỹ sư điều khiển", password: "123456", departmentId: "d1", color: "blue", accessLevel: 'employee' },

@@ -20,11 +20,23 @@ function initStorage() {
     (snap) => {
       if (snap.exists) {
         const data = snap.data();
-        departments = data.departments || seedDepartments.slice();
+        departments = (data.departments || seedDepartments.slice()).map((d) => ({
+          ...d,
+          type: d.type || ((d.name || "").toLowerCase().includes("kế toán") ? "office" : "tech"),
+          hasMachine: d.hasMachine !== undefined ? d.hasMachine : !((d.name || "").toLowerCase().includes("kế toán"))
+        }));
         employees = (data.employees || []).map((e) => ({
           ...e,
           accessLevel: e.accessLevel || (e.role && e.role.toLowerCase().includes("quản lý") ? "manager" : "employee")
         }));
+        // Đảm bảo luôn có ít nhất 1 tài khoản quản lý (e5 / 1111) để không bị khóa hệ thống
+        // if (!employees.some((e) => e.accessLevel === "manager" || e.code === "1111")) {
+        //   const defaultManager = seedEmployees.find((e) => e.code === "1111") || {
+        //     id: "e5", code: "1111", name: "Hoài Nam", role: "Quản lý", password: "111111", departmentId: "d1", color: "amber", accessLevel: "manager"
+        //   };
+        //   employees.unshift(defaultManager);
+        //   docRef.set({ departments, employees, tasks, leaveRequests, machines }).catch(() => {});
+        // }
         tasks = data.tasks || [];
         leaveRequests = data.leaveRequests || [];
         machines = data.machines || [];
