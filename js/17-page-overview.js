@@ -29,7 +29,7 @@ function renderOverviewPage() {
         { value: done, color: "green" },
         { value: closed, color: "purple" },
       ],
-      { size: 82, thickness: 12, centerLabel: pct + "%", centerSub: "" }
+      { size: 82, thickness: 12, centerLabel: pct + "%", centerSub: "", overdueCount: overdue, total: dTasks.length }
     );
     return `
       <button class="dept-card" onclick="openDepartment('${d.id}')">

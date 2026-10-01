@@ -1,4 +1,4 @@
-/* =====================================================================
+﻿/* =====================================================================
    18-page-department.js — Trang BỘ PHẬN (Dashboard / Nhân viên / Task / Máy)
    
    ===================================================================== */
@@ -45,6 +45,13 @@ function renderDepartment() {
       </div>
     </div>
     <div class="sync-bar" id="sync-bar"></div>
+    ${
+      isDeptReadOnly(dept.id)
+        ? `<div style="background:var(--blue-soft);border:1px solid var(--blue);color:var(--blue);border-radius:8px;padding:8px 12px;font-size:12.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            ${ic("alert")} <span>${t("dept_view_only_banner")}</span>
+           </div>`
+        : ""
+    }
 
     <div class="toolbar">
       <div class="view-tabs">
@@ -103,7 +110,22 @@ function renderDeptEmployeesTab(dept) {
               ? "green"
               : l.status === "rejected"
                 ? "red"
-                : "amber";
+                : l.status === "pending_director"
+                  ? "purple"
+                  : "amber";
+          const stLabel =
+            l.status === "approved" ? t("leave_status_approved")
+            : l.status === "rejected" ? t("leave_status_rejected")
+            : l.status === "pending_director" ? t("leave_status_pending_director")
+            : t("leave_status_pending");
+
+          // Chỉ được duyệt nếu: có quyền approve + KHÔNG phải đơn của mình
+          // + nếu status pending_director thì chỉ admin/director mới được
+          const isHighRole = currentUser && (currentUser.accessLevel === 'admin' || currentUser.accessLevel === 'director');
+          const canApproveThis = hasPermission("leave:approve")
+            && l.employeeId !== currentUser.id
+            && (l.status !== "pending_director" || isHighRole);
+
           return `
       <div class="leave-item">
         <div class="item-info">
@@ -112,17 +134,18 @@ function renderDeptEmployeesTab(dept) {
         </div>
         <div class="leave-actions">
           ${
-            hasPermission("leave:approve")
+            canApproveThis
               ? `
                     <select class="status-select" style="color:var(--${stColor});border-color:var(--${stColor})" onchange="setLeaveStatus('${l.id}',this.value)">
                       <option value="pending" ${l.status === "pending" ? "selected" : ""}>${t("leave_status_pending")}</option>
+                      ${isHighRole ? `<option value="pending_director" ${l.status === "pending_director" ? "selected" : ""}>${t("leave_status_pending_director")}</option>` : ""}
                       <option value="approved" ${l.status === "approved" ? "selected" : ""}>${t("leave_status_approved")}</option>
                       <option value="rejected" ${l.status === "rejected" ? "selected" : ""}>${t("leave_status_rejected")}</option>
                     </select>
                 `
               : `
                   <span class="badge mono" style="color:var(--${stColor});border-color:var(--${stColor})">
-                    ${l.status === "pending" ? t("leave_status_pending") : l.status === "approved" ? t("leave_status_approved") : t("leave_status_rejected")}
+                    ${stLabel}
                   </span>
                 `
           }
@@ -165,7 +188,8 @@ function renderDeptEmployeesTab(dept) {
                <input id="f-erole" placeholder="${t("f_emp_role_ph")}" />
                <select id="f-eaccess" style="width:100%;margin-bottom:8px">
                  <option value="employee">${t("role_employee")}</option>
-                 <option value="manager">${t("role_manager")}</option>
+                 <option value="dept_manager">${t("role_dept_manager")}</option>
+                 ${currentUser && (currentUser.accessLevel === 'admin' || currentUser.accessLevel === 'director') ? `<option value="director">${t("role_director")}</option>` : ""}
                </select>
                <input id="f-epass" placeholder="${t("f_emp_pass_ph")}" />
                <div id="f-emp-error" class="form-error"></div>
@@ -186,9 +210,11 @@ function renderDeptEmployeesTab(dept) {
             : `<div class="form" style="margin-top:0;border-top:none;padding-top:0">
                ${
                  hasPermission("leave:approve")
-                   ? `<select id="f-lemp"><option value="">${t("select_emp")}</option>${leaveEmpOptions}</select>`
+                   ? `<select id="f-lemp"><option value="">${t("select_emp")}</option>${leaveEmpOptions}</select>
+                      <div style="color:var(--amber);font-size:0.82em;margin-top:4px;opacity:0.85">${t("leave_director_note")}</div>`
                    : `<input type="hidden" id="f-lemp" value="${currentUser.id}" />
-                    <div style="margin-bottom: 8px; font-weight: 500;">${t("leave_applicant")}: <span style="color:var(--blue)">${escapeHtml(currentUser.name)}</span></div>`
+                     <div style="margin-bottom: 8px; font-weight: 500;">${t("leave_applicant")}: <span style="color:var(--blue)">${escapeHtml(currentUser.name)}</span></div>
+                     ${currentUser.accessLevel === 'dept_manager' ? `<div style="color:var(--amber);font-size:0.82em;margin-bottom:6px">${t("leave_director_note")}</div>` : ""}`
                }
                <div style="display:flex;gap:8px">
                  <input id="f-lfrom" type="date" style="flex:1" />

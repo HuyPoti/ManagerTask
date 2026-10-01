@@ -28,7 +28,9 @@ async function addEmployee() {
   await saveData();
 }
 async function deleteEmployee(id) {
-  if (!hasPermission('employee:delete')) {
+  const targetEmp = employees.find((e) => e.id === id);
+  const targetDept = targetEmp ? targetEmp.departmentId : activeDeptId;
+  if (!hasPermission('employee:delete', targetDept)) {
     alert(t("err_perm_del_emp"));
     return;
   }
