@@ -32,6 +32,10 @@ async function deleteEmployee(id) {
     alert(t("err_perm_del_emp"));
     return;
   }
+  if (currentUser && currentUser.id === id) {
+    alert(t("err_cannot_delete_self"));
+    return;
+  }
   if (!confirm("Xoá nhân viên này? Các công việc đã giao sẽ chuyển về trạng thái Chưa gán.")) return;
   employees = employees.filter((e) => e.id !== id);
   if (calEmpId === id) { const de = deptEmployees(activeDeptId); calEmpId = de.length ? de[0].id : null; }

@@ -77,7 +77,7 @@ function renderDeptEmployeesTab(dept) {
         <div class="emp-role">${escapeHtml(e.role)}</div>
       </div>
       <span class="emp-count mono">${taskCountFor(e.id)}</span>
-      ${hasPermission("employee:delete") ? `<button class="icon-btn danger" style="margin-left:4px" onclick="deleteEmployee('${e.id}')" aria-label="${t("btn_delete")}">${ic("trash")}</button>` : ""}
+      ${hasPermission("employee:delete") && (!currentUser || currentUser.id !== e.id) ? `<button class="icon-btn danger" style="margin-left:4px" onclick="deleteEmployee('${e.id}')" aria-label="${t("btn_delete")}">${ic("trash")}</button>` : ""}
     </div>
   `,
         )
